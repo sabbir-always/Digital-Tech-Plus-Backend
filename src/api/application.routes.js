@@ -1,18 +1,23 @@
 import express from "express";
-import * as auth_controller from "#/controllers/authentication/authentication.controller.js";
+import * as authentication from "#/controllers/authentication.controller.js";
+import * as categories from "#/controllers/categories.controller.js";
 import { isSignin } from "#/middlewares/auth.middleware.js";
 const routes = express.Router();
 
-// Public routes || http://localhost:8000/api/v1/polytechnic/institute/authentication/create
-routes.post("/digital/tech/plus/authentication/create", auth_controller.create)
-routes.post("/digital/tech/plus/authentication/signin", auth_controller.signin)
-routes.get("/digital/tech/plus/authentication/show", auth_controller.show)
-routes.get("/digital/tech/plus/authentication/indv/:id", auth_controller.single)
-routes.put("/digital/tech/plus/authentication/update/:id", auth_controller.update)
-routes.delete("/digital/tech/plus/authentication/delete/:id", auth_controller.destroy)
-routes.put("/digital/tech/plus/authentication/change-password", isSignin, auth_controller.change_password)
+// Public routes || http://localhost:8000/api/v1/authentication/create
+routes.post("/authentication/create", authentication.create)
+routes.post("/authentication/signin", authentication.signin)
+routes.get("/authentication/show", authentication.show)
+routes.get("/authentication/indv/:id", authentication.single)
+routes.put("/authentication/update/:id", authentication.update)
+routes.delete("/authentication/delete/:id", authentication.destroy)
+routes.put("/authentication/change-password", isSignin, authentication.change_password)
 
-// Private routes || http://localhost:8000/api/v1/polytechnic/institute/department/create
-
+// Private routes || http://localhost:8000/api/v1/categories/create
+routes.post("/categories/create", categories.create)
+routes.get("/categories/show", categories.show)
+routes.get("/categories/indv/:id", categories.indvidual)
+routes.put("/categories/update/:id", categories.update)
+routes.delete("/categories/delete/:id", categories.destroy)
 
 export default routes;

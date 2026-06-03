@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs"
 import dotenv from 'dotenv';
 dotenv.config();
-import AuthenticationSchema from "#/models/authentication/authentication.model.js";
+import AuthenticationSchema from "#/models/authentication.model.js";
 import { createJSONWebToken, createPagination, createFormattedDate } from "#/utils/common.utils.js";
 import { auth_change_password_schema, auth_create_schema, auth_signin_schema, auth_update_schema } from "#/validations/joi.schema.validation.js";
 

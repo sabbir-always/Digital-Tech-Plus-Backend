@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { categories_schema } from "#/validations/joi.schema.validation.js";
 import { createPagination } from "#/utils/common.utils.js";
-import CategoriesModel from "#/models/common/categories.model";
+import CategoriesModel from "#/models/categories.model.js";
 
 export const create = async (req, res) => {
     try {
@@ -16,7 +16,7 @@ export const create = async (req, res) => {
         if (result) {
             return res.status(201).json({
                 success: true,
-                message: 'Category Create Success',
+                message: 'Item Create Success',
                 payload: result
             });
         }
@@ -48,7 +48,7 @@ export const show = async (req, res) => {
         } else {
             return res.status(200).json({
                 success: true,
-                message: 'Category Show Success',
+                message: 'Item Show Success',
                 pagination: createPagination(page, limit, count),
                 payload: result,
             });
@@ -61,7 +61,7 @@ export const show = async (req, res) => {
     }
 }
 
-export const single = async (req, res) => {
+export const indvidual = async (req, res) => {
     try {
         const { id } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) { return res.status(400).json({ success: false, message: "Invalid ID Format" }) }
@@ -72,7 +72,7 @@ export const single = async (req, res) => {
         } else {
             return res.status(200).json({
                 success: true,
-                message: 'Category Show Success',
+                message: 'Item Show Success',
                 payload: result
             });
         }
@@ -106,7 +106,7 @@ export const update = async (req, res) => {
         if (result) {
             return res.status(200).json({
                 success: true,
-                message: 'Category Update Success',
+                message: 'Item Update Success',
                 payload: result
             });
         }
@@ -138,7 +138,7 @@ export const destroy = async (req, res) => {
         } else {
             return res.status(200).json({
                 success: true,
-                message: 'Category Destroy Success',
+                message: 'Item Destroy Success',
             });
         }
 

@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import AuthenticationModel from '#/models/authentication/authentication.model.js';
+import AuthenticationModel from '#/models/authentication.model.js';
 import mongoose from 'mongoose';
 
 export const isSignin = async (req, res, next) => {
