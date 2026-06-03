@@ -3,9 +3,19 @@ import mongoose from "mongoose";
 const AppointmentSchema = new mongoose.Schema({
     date_and_time: {
         type: Date,
-        required: [true, "Date and Time is required"]
+        required: [true, "Date and Time is required"],
+        default: Date.now
     },
     date_and_time_format: {
+        type: String,
+        default: null
+    },
+    meeting_date_and_time: {
+        type: Date,
+        required: [true, "Date and Time is required"],
+        default: Date.now
+    },
+    meeting_date_and_time_format: {
         type: String,
         default: null
     },
@@ -51,9 +61,9 @@ const AppointmentSchema = new mongoose.Schema({
     address: {
         type: String,
         trim: true,
-        required: [true, "Address is required"],
         minlength: [10, "Address must be at least 10 characters"],
-        maxlength: [100, "Address cannot exceed 100 characters"]
+        maxlength: [100, "Address cannot exceed 100 characters"],
+        default: null
     },
     message: {
         type: String,
@@ -83,7 +93,7 @@ const AppointmentSchema = new mongoose.Schema({
     status: {
         type: String,
         required: [true, "Status is required"],
-        enum: ["pending", "cancelled", "completed"],
+        enum: ["pending", "cancelled", "postponed", "completed"],
         default: "pending"
     }
 }, { timestamps: true });
