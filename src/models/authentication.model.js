@@ -54,7 +54,7 @@ const AuthenticationSchema = new mongoose.Schema({
     role: {
         type: String,
         required: [true, "Role is required"],
-        enum: ["superadmin", "admin", "teacher", "student", "anonymous"],
+        enum: ["superadmin", "anonymous"],
         default: "anonymous"
     },
     status: {

@@ -33,9 +33,14 @@ export const categories_schema = Joi.object({
     categories_name: Joi.string().trim().min(3).max(30).required()
 })
 
-export const department_schema = Joi.object({
-    department_name: Joi.string().trim().min(3).max(30).required(),
-    created_by: Joi.string().trim().optional().empty("").allow(null)
+export const services_schema = Joi.object({
+    service_name: Joi.string().trim().min(20).max(40).required(),
+    short_description: Joi.string().trim().min(50).max(100).required(),
+    long_description: Joi.string().trim().min(200).max(500).required(),
+    categories_id: Joi.string().trim().required(),
+    basic_price: Joi.number().min(0).required(),
+    image: Joi.any().optional().empty("").allow(null),
+    status: Joi.string().valid("active", "inactive").optional().empty("").allow(null)
 })
 
 export const section_schema = Joi.object({

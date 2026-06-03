@@ -9,7 +9,7 @@ const CategoriesSchema = new mongoose.Schema({
         minlength: [3, "Categories name must be at least 3 characters"],
         maxlength: [30, "Categories name cannot exceed 30 characters"]
     },
-    total_items: {
+    total_service: {
         type: Number,
         default: 0
     }

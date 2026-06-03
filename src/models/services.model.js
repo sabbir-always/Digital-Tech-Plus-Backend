@@ -6,20 +6,36 @@ const ServiceSchema = new mongoose.Schema({
         trim: true,
         unique: true,
         required: [true, "Service name is required"],
-        minlength: [3, "Service name must be at least 3 characters"],
-        maxlength: [30, "Service name cannot exceed 30 characters"]
+        minlength: [20, "Service name must be at least 20 characters"],
+        maxlength: [40, "Service name cannot exceed 40 characters"]
     },
-    description: {
+    short_description: {
         type: String,
         trim: true,
         required: [true, "Description is required"],
-        minlength: [3, "Description must be at least 3 characters"],
-        maxlength: [200, "Description cannot exceed 200 characters"]
+        minlength: [50, "Short description must be at least 50 characters"],
+        maxlength: [100, "Short description cannot exceed 100 characters"]
     },
-    service_icon: {
+    long_description: {
         type: String,
         trim: true,
-        required: [true, "Service icon is required"]
+        required: [true, "Description is required"],
+        minlength: [200, "Long description must be at least 200 characters"],
+        maxlength: [500, "Long description cannot exceed 500 characters"]
+    },
+    categories_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Categories",
+        required: [true, "Categories is required"]
+    },
+    basic_price: {
+        type: Number,
+        required: [true, "Basic Price is required"],
+        default: 0
+    },
+    attachment: {
+        type: Array,
+        default: []
     },
     status: {
         type: String,
