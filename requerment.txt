@@ -1,0 +1,8 @@
+    1.  Service CRUD
+    2.  Categories CRUD
+    3.  Product CRUD
+    4.  Add to Cut CRUD
+    5.  Blogs CRUD
+    6.  Appointment CRUD
+    7.  Product Review CRUD
+    8.  Product Price CRUD
