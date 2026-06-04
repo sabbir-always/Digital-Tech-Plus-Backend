@@ -50,6 +50,8 @@ export const teams_schema = Joi.object({
     phone: Joi.string().trim().min(11).max(11).required(),
     email: Joi.string().email({ tlds: { allow: true } }).trim().min(8).max(50).lowercase().required(),
     role: Joi.string().trim().min(3).max(30).required(),
+    facebook_url: Joi.string().trim().optional().empty("").allow(null),
+    linkedin_url: Joi.string().trim().optional().empty("").allow(null),
     attachment: Joi.any().optional().empty("").allow(null)
 })
 
