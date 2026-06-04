@@ -32,7 +32,8 @@ export const create = async (req, res) => {
         }
 
         const result = await new TeamsModel({
-            date_and_time: createFormattedDate(date_and_time),
+            date_and_time: date_and_time || new Date(),
+            date_and_time_format: createFormattedDate(date_and_time || new Date()),
             first_name: first_name,
             last_name: last_name,
             full_name: first_name + ' ' + last_name,
@@ -148,7 +149,8 @@ export const update = async (req, res) => {
         }
 
         const result = await TeamsModel.findByIdAndUpdate(id, {
-            date_and_time: createFormattedDate(date_and_time),
+            date_and_time: date_and_time || new Date(),
+            date_and_time_format: createFormattedDate(date_and_time || new Date()),
             first_name: first_name,
             last_name: last_name,
             full_name: first_name + ' ' + last_name,

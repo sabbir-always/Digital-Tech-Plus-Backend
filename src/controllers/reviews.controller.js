@@ -7,7 +7,8 @@ import ReviewsModel from "#/models/reviews.model.js";
 
 export const create = async (req, res) => {
     try {
-        const { date_and_time, authentication_id, service_id, rating, comments } = req.body;
+        const authentication_id = req.auth._id;
+        const { date_and_time, service_id, rating, comments } = req.body;
         const { error } = review_schema.validate(req.body, { errors: { wrap: { label: "" } } });
         if (error) { return res.status(400).json({ success: false, message: error.details[0].message }) }
         if (!mongoose.Types.ObjectId.isValid(authentication_id)) { return res.status(400).json({ success: false, message: "Invalid Authentication ID format" }) }
@@ -19,10 +20,12 @@ export const create = async (req, res) => {
         ]);
 
         if (!isAuthentication) { return res.status(409).json({ success: false, message: "Not Found By ID" }) }
+        if (isAuthentication.status !== 'active') { return res.status(403).json({ success: false, message: "Account is not active" }) }
         if (!isServices) { return res.status(404).json({ success: false, message: "Not Found By ID" }) }
 
         const result = await new ReviewsModel({
-            date_and_time: createFormattedDate(date_and_time || new Date()),
+            date_and_time: date_and_time || new Date(),
+            date_and_time_format: createFormattedDate(date_and_time || new Date()),
             authentication_id: authentication_id,
             service_id: service_id,
             rating: rating,
@@ -62,7 +65,7 @@ export const show = async (req, res) => {
 
         // === filter by authentication ===
         if (authentication && authentication !== 'undefined' && authentication !== "null" && authentication !== "") {
-            if (mongoose.Types.ObjectId.isValid(semester)) {
+            if (mongoose.Types.ObjectId.isValid(authentication)) {
                 dataFilter.authentication_id = authentication;
             } else {
                 return res.status(400).json({
@@ -73,7 +76,7 @@ export const show = async (req, res) => {
 
         // === filter by services ===
         if (services && services !== 'undefined' && services !== "null" && services !== "") {
-            if (mongoose.Types.ObjectId.isValid(semester)) {
+            if (mongoose.Types.ObjectId.isValid(services)) {
                 dataFilter.service_id = services;
             } else {
                 return res.status(400).json({
@@ -84,9 +87,9 @@ export const show = async (req, res) => {
 
         const [reviews, count] = await Promise.all([
             ReviewsModel.find(dataFilter)
-                .populate('authentication_id', 'full_name')
+                .populate('authentication_id', 'full_name email phone role status')
                 .populate('service_id', 'service_name')
-                .limit(limit).skip((page - 1) * limit).lean(),
+                .sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
             ReviewsModel.countDocuments(dataFilter)
         ]);
 
@@ -94,8 +97,14 @@ export const show = async (req, res) => {
             return {
                 ...review,
                 authentication_id: review.authentication_id._id,
-                authentication_name: review.authentication_id.full_name,
-                service_id: review.service_id.service_id,
+                authentication: {
+                    name: review.authentication_id.full_name,
+                    email: review.authentication_id.email,
+                    phone: review.authentication_id.phone,
+                    role: review.authentication_id.role,
+                    status: review.authentication_id.status
+                },
+                service_id: review.service_id._id,
                 service_name: review.service_id.service_name
             }
         })
@@ -123,7 +132,7 @@ export const indvidual = async (req, res) => {
         const { id } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) { return res.status(400).json({ success: false, message: "Invalid ID Format" }) }
         const result = await ReviewsModel.findById(id)
-            .populate('authentication_id', 'full_name')
+            .populate('authentication_id', 'full_name email phone role status')
             .populate('service_id', 'service_name').lean();
 
         if (!result) {
@@ -135,7 +144,13 @@ export const indvidual = async (req, res) => {
                 payload: {
                     ...result,
                     authentication_id: result.authentication_id._id,
-                    authentication_name: result.authentication_id.full_name,
+                    authentication: {
+                        name: result.authentication_id.full_name,
+                        email: result.authentication_id.email,
+                        phone: result.authentication_id.phone,
+                        role: result.authentication_id.role,
+                        status: result.authentication_id.status
+                    },
                     service_id: result.service_id._id,
                     service_name: result.service_id.service_name
                 }
@@ -153,7 +168,8 @@ export const indvidual = async (req, res) => {
 export const update = async (req, res) => {
     try {
         const { id } = req.params
-        const { date_and_time, authentication_id, service_id, rating, comments, status } = req.body;
+        const authentication_id = req.auth._id;
+        const { date_and_time, service_id, rating, comments, status } = req.body;
 
         // === Basic field validation ===
         const { error } = review_schema.validate(req.body, { errors: { wrap: { label: "" } } });
@@ -170,10 +186,12 @@ export const update = async (req, res) => {
 
         if (!isReviews) { return res.status(404).json({ success: false, message: "Not Found By ID" }) }
         if (!isAuthentication) { return res.status(404).json({ success: false, message: "Authentication Not Found" }) }
+        if (isAuthentication.status !== 'active') { return res.status(403).json({ success: false, message: "Account is not active" }) }
         if (!isServices) { return res.status(404).json({ success: false, message: "Services Not Found" }) }
 
         const result = await ReviewsModel.findByIdAndUpdate(id, {
-            date_and_time: createFormattedDate(date_and_time || new Date()),
+            date_and_time: date_and_time || new Date(),
+            date_and_time_format: createFormattedDate(date_and_time || new Date()),
             authentication_id: authentication_id,
             service_id: service_id,
             rating: rating,

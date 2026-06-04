@@ -7,7 +7,7 @@ import * as packages from "#/controllers/packages.controller.js";
 import * as reviews from "#/controllers/reviews.controller.js";
 import * as orders from "#/controllers/orders.controller.js";
 import * as appointments from "#/controllers/appointment.controller.js";
-import { isSignin } from "#/middlewares/auth.middleware.js";
+import { isSignin, authorizeRoles } from "#/middlewares/auth.middleware.js";
 import upload from "#/multer/upload.multer.js";
 const routes = express.Router();
 
@@ -49,10 +49,10 @@ routes.put("/packages/update/:id", packages.update)
 routes.delete("/packages/delete/:id", packages.destroy)
 
 // Private routes || http://localhost:8000/api/v1/reviews/create
-routes.post("/reviews/create", reviews.create)
+routes.post("/reviews/create", isSignin, authorizeRoles("superadmin", "anonymous"), reviews.create)
 routes.get("/reviews/show", reviews.show)
 routes.get("/reviews/indv/:id", reviews.indvidual)
-routes.put("/reviews/update/:id", reviews.update)
+routes.put("/reviews/update/:id", isSignin, authorizeRoles("superadmin", "anonymous"), reviews.update)
 routes.delete("/reviews/delete/:id", reviews.destroy)
 
 // Private routes || http://localhost:8000/api/v1/orders/create

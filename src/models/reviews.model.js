@@ -17,7 +17,7 @@ const ReviewsSchema = new mongoose.Schema({
     },
     service_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Services",
+        ref: "Service",
         required: [true, "Service is required"]
     },
     rating: {

@@ -18,8 +18,10 @@ export const create = async (req, res) => {
         if (isExistEmail) { return res.status(409).json({ success: false, message: "Email already exists. Try another." }) }
 
         const result = await new AppointmentModel({
-            date_and_time: createFormattedDate(date_and_time || Date.now()),
-            meeting_date_and_time: createFormattedDate(meeting_date_and_time || Date.now()),
+            date_and_time: date_and_time || new Date(),
+            date_and_time_format: createFormattedDate(date_and_time || new Date()),
+            meeting_date_and_time: meeting_date_and_time,
+            meeting_date_and_time_format: createFormattedDate(meeting_date_and_time),
             frist_name: frist_name,
             last_name: last_name,
             full_name: frist_name + ' ' + last_name,
@@ -126,8 +128,10 @@ export const update = async (req, res) => {
         if (isExistEmail) { return res.status(409).json({ success: false, message: "Email already exists. Try another." }) }
 
         const result = await AppointmentModel.findByIdAndUpdate(id, {
-            date_and_time: createFormattedDate(date_and_time || Date.now()),
-            meeting_date_and_time: createFormattedDate(meeting_date_and_time || Date.now()),
+            date_and_time: date_and_time || new Date(),
+            date_and_time_format: createFormattedDate(date_and_time || new Date()),
+            meeting_date_and_time: meeting_date_and_time,
+            meeting_date_and_time_format: createFormattedDate(meeting_date_and_time),
             frist_name: frist_name,
             last_name: last_name,
             full_name: frist_name + ' ' + last_name,

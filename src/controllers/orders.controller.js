@@ -26,7 +26,8 @@ export const create = async (req, res) => {
         if (!isPackages) { return res.status(404).json({ success: false, message: "Not Found By ID" }) }
 
         const result = await new OrdersModel({
-            date_and_time: createFormattedDate(date_and_time || new Date()),
+            date_and_time: date_and_time || new Date(),
+            date_and_time_format: createFormattedDate(date_and_time || new Date()),
             authentication_id: authentication_id,
             service_id: service_id,
             package_id: package_id
@@ -65,7 +66,7 @@ export const show = async (req, res) => {
 
         // === filter by authentication ===
         if (authentication && authentication !== 'undefined' && authentication !== "null" && authentication !== "") {
-            if (mongoose.Types.ObjectId.isValid(semester)) {
+            if (mongoose.Types.ObjectId.isValid(authentication)) {
                 dataFilter.authentication_id = authentication;
             } else {
                 return res.status(400).json({
@@ -76,7 +77,7 @@ export const show = async (req, res) => {
 
         // === filter by services ===
         if (services && services !== 'undefined' && services !== "null" && services !== "") {
-            if (mongoose.Types.ObjectId.isValid(semester)) {
+            if (mongoose.Types.ObjectId.isValid(services)) {
                 dataFilter.service_id = services;
             } else {
                 return res.status(400).json({
@@ -87,7 +88,7 @@ export const show = async (req, res) => {
 
         // === filter by services ===
         if (packages && packages !== 'undefined' && packages !== "null" && packages !== "") {
-            if (mongoose.Types.ObjectId.isValid(semester)) {
+            if (mongoose.Types.ObjectId.isValid(packages)) {
                 dataFilter.package_id = packages;
             } else {
                 return res.status(400).json({
@@ -96,24 +97,30 @@ export const show = async (req, res) => {
             }
         }
 
-        const [reviews, count] = await Promise.all([
+        const [orders, count] = await Promise.all([
             OrdersModel.find(dataFilter)
-                .populate('authentication_id', 'full_name')
+                .populate('authentication_id', 'full_name email phone role status')
                 .populate('service_id', 'service_name')
                 .populate('package_id', 'package_name')
-                .limit(limit).skip((page - 1) * limit).lean(),
+                .sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
             OrdersModel.countDocuments(dataFilter)
         ]);
 
-        const result = reviews.map((review) => {
+        const result = orders.map((order) => {
             return {
-                ...review,
-                authentication_id: review.authentication_id._id,
-                authentication_name: review.authentication_id.full_name,
-                service_id: review.service_id.service_id,
-                service_name: review.service_id.service_name,
-                package_id: review.package_id.package_id,
-                package_name: review.package_id.package_name
+                ...order,
+                authentication_id: order.authentication_id._id,
+                authentication: {
+                    name: order.authentication_id.full_name,
+                    email: order.authentication_id.email,
+                    phone: order.authentication_id.phone,
+                    role: order.authentication_id.role,
+                    status: order.authentication_id.status
+                },
+                service_id: order.service_id._id,
+                service_name: order.service_id.service_name,
+                package_id: order.package_id._id,
+                package_name: order.package_id.package_name
             }
         })
 
@@ -153,7 +160,13 @@ export const indvidual = async (req, res) => {
                 payload: {
                     ...result,
                     authentication_id: result.authentication_id._id,
-                    authentication_name: result.authentication_id.full_name,
+                    authentication: {
+                        name: result.authentication_id.full_name,
+                        email: result.authentication_id.email,
+                        phone: result.authentication_id.phone,
+                        role: result.authentication_id.role,
+                        status: result.authentication_id.status
+                    },
                     service_id: result.service_id._id,
                     service_name: result.service_id.service_name,
                     package_id: result.package_id._id,
@@ -196,7 +209,8 @@ export const update = async (req, res) => {
         if (!isPackages) { return res.status(404).json({ success: false, message: "Packages Not Found" }) }
 
         const result = await ReviewsModel.findByIdAndUpdate(id, {
-            date_and_time: createFormattedDate(date_and_time || new Date()),
+            date_and_time: date_and_time || new Date(),
+            date_and_time_format: createFormattedDate(date_and_time || new Date()),
             authentication_id: authentication_id,
             service_id: service_id,
             package_id: package_id,

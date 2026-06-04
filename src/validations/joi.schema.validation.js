@@ -80,7 +80,6 @@ export const packages_schema = Joi.object({
 
 export const review_schema = Joi.object({
     date_and_time: Joi.date().required(),
-    authentication_id: Joi.string().trim().required(),
     service_id: Joi.string().trim().required(),
     rating: Joi.number().min(1).max(5).required(),
     comments: Joi.string().trim().min(10).max(100).optional().empty("").allow(null),
