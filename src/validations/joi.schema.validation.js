@@ -69,3 +69,32 @@ export const appointment_schema = Joi.object({
     meeting_with: Joi.string().valid("meeting_with_owner", "digital_marketer", "project_manager").required(),
     status: Joi.string().valid("pending", "cancelled", "postponed", "completed").optional().empty("").allow(null),
 })
+
+export const packages_schema = Joi.object({
+    service_id: Joi.string().trim().required(),
+    package_name: Joi.string().trim().min(3).max(30).required(),
+    price: Joi.number().min(0).required(),
+    features: Joi.array().items(Joi.string().trim().min(3).max(30)).min(1).required(),
+    status: Joi.string().valid("active", "inactive").optional().empty("").allow(null)
+})
+
+export const review_schema = Joi.object({
+    date_and_time: Joi.date().required(),
+    authentication_id: Joi.string().trim().required(),
+    service_id: Joi.string().trim().required(),
+    rating: Joi.number().min(1).max(5).required(),
+    comments: Joi.string().trim().min(10).max(100).optional().empty("").allow(null),
+    status: Joi.string().valid("active", "inactive").optional().empty("").allow(null)
+})
+
+export const orders_schema = Joi.object({
+    date_and_time: Joi.date().required(),
+    authentication_id: Joi.string().trim().required(),
+    service_id: Joi.string().trim().required(),
+    package_id: Joi.string().trim().required(),
+    paid_amount: Joi.number().min(0).optional().empty("").allow(null),
+    payment_status: Joi.string().valid("pending", "paid", "refunded").optional().empty("").allow(null),
+    payment_method: Joi.string().valid("Cash", "Bkash", "Nagad", "Binance", "Bank_Transfer").optional().empty("").allow(null),
+    message: Joi.string().trim().min(10).max(100).optional().empty("").allow(null),
+    status: Joi.string().valid("pending", "cancelled", "postponed", "completed").optional().empty("").allow(null)
+})

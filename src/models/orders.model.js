@@ -10,15 +10,15 @@ const OrdersSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    service_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Services",
-        required: [true, "Service is required"]
-    },
     authentication_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Authentication",
         required: [true, "User is required"]
+    },
+    service_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Services",
+        required: [true, "Service is required"]
     },
     package_id: {
         type: mongoose.Schema.Types.ObjectId,
@@ -38,8 +38,15 @@ const OrdersSchema = new mongoose.Schema({
     },
     payment_method: {
         type: String,
-        enum: ["Cash", "Bkash", "Nagad", "Bank_Transfer"],
-        required: false
+        enum: ["Cash", "Bkash", "Nagad", "Binance", "Bank_Transfer"],
+        default: null
+    },
+    message: {
+        type: String,
+        trim: true,
+        minlength: [10, "Message must be at least 10 characters"],
+        maxlength: [100, "Message cannot exceed 50 characters"],
+        default: null
     },
     status: {
         type: String,

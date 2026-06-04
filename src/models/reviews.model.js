@@ -1,15 +1,24 @@
 import mongoose from "mongoose";
 
 const ReviewsSchema = new mongoose.Schema({
-    service_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Services",
-        required: [true, "Service is required"]
+    date_and_time: {
+        type: Date,
+        required: [true, "Date and Time is required"],
+        default: Date.now
+    },
+    date_and_time_format: {
+        type: String,
+        default: null
     },
     authentication_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Authentication",
         required: [true, "User is required"]
+    },
+    service_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Services",
+        required: [true, "Service is required"]
     },
     rating: {
         type: Number,
