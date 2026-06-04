@@ -2,6 +2,7 @@ import express from "express";
 import * as authentication from "#/controllers/authentication.controller.js";
 import * as categories from "#/controllers/categories.controller.js";
 import * as services from "#/controllers/services.controller.js";
+import * as portfolio from "#/controllers/portfolio.controller.js";
 import * as teams from "#/controllers/teams.controller.js";
 import * as packages from "#/controllers/packages.controller.js";
 import * as reviews from "#/controllers/reviews.controller.js";
@@ -33,6 +34,13 @@ routes.get("/services/show", services.show)
 routes.get("/services/indv/:id", services.indvidual)
 routes.put("/services/update/:id", upload.array("attachment"), services.update)
 routes.delete("/services/delete/:id", services.destroy)
+
+// Private routes || http://localhost:8000/api/v1/portfolio/create
+routes.post("/portfolio/create", upload.single("attachment"), portfolio.create)
+routes.get("/portfolio/show", portfolio.show)
+routes.get("/portfolio/indv/:id", portfolio.indvidual)
+routes.put("/portfolio/update/:id", upload.single("attachment"), portfolio.update)
+routes.delete("/portfolio/delete/:id", portfolio.destroy)
 
 // Private routes || http://localhost:8000/api/v1/teams/create
 routes.post("/teams/create", upload.single("attachment"), teams.create)

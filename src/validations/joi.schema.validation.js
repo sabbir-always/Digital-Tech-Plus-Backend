@@ -43,6 +43,14 @@ export const services_schema = Joi.object({
     status: Joi.string().valid("active", "inactive").optional().empty("").allow(null)
 })
 
+export const portfolio_schema = Joi.object({
+    date_and_time: Joi.date().required(),
+    portfolio_name: Joi.string().trim().min(3).max(30).required(),
+    description: Joi.string().trim().min(50).max(160).required(),
+    attachment: Joi.any().optional().empty("").allow(null),
+    status: Joi.string().valid("active", "inactive").optional().empty("").allow(null)
+})
+
 export const teams_schema = Joi.object({
     date_and_time: Joi.date().required(),
     first_name: Joi.string().trim().min(3).max(15).required(),

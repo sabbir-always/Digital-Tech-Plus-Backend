@@ -1,28 +1,29 @@
 import mongoose from "mongoose";
 import { v2 as cloudinary } from 'cloudinary';
 import { uploadCloudinary, uploadMultipleCloudinary } from "#/multer/upload.cloudinary.js";
-import { teams_schema } from "#/validations/joi.schema.validation.js";
+import { portfolio_schema } from "#/validations/joi.schema.validation.js";
 import { createFormattedDate, createPagination } from "#/utils/common.utils.js";
-import TeamsModel from "#/models/teams.model.js";
+import PortfolioModel from "#/models/portfolio.model.js";
+import CategoriesModel from "#/models/categories.model.js";
 
 export const create = async (req, res) => {
     try {
-        const { date_and_time, first_name, last_name, phone, email, role, facebook_url, linkedin_url } = req.body;
-        const { error } = teams_schema.validate(req.body, { errors: { wrap: { label: "" } } });
+        const { date_and_time, portfolio_name, description, categories_id } = req.body;
+        const { error } = portfolio_schema.validate(req.body, { errors: { wrap: { label: "" } } });
         if (error) { return res.status(400).json({ success: false, message: error.details[0].message }) }
 
-        const [isExistPhone, isExistEmail] = await Promise.all([
-            TeamsModel.exists({ phone: { $regex: new RegExp(`^${phone.trim()}$`, 'i') } }),
-            TeamsModel.exists({ email: { $regex: new RegExp(`^${email.trim()}$`, 'i') } }),
+        const [isExistPortfolio, isCategories] = await Promise.all([
+            PortfolioModel.exists({ portfolio_name: { $regex: new RegExp(`^${portfolio_name.trim()}$`, 'i') } }),
+            CategoriesModel.findById(categories_id).lean()
         ]);
 
-        if (isExistPhone) { return res.status(409).json({ success: false, message: "Phone already exists. Try another." }) }
-        if (isExistEmail) { return res.status(409).json({ success: false, message: "Email already exists. Try another." }) }
+        if (isExistPortfolio) { return res.status(409).json({ success: false, message: "Phone already exists. Try another." }) }
+        if (!isCategories) { return res.status(404).json({ success: false, message: "Not Found By ID" }) }
 
         let attachment = null;
         if (req.file && req.file.path) {
             try {
-                const cloudinaryResult = await uploadCloudinary(req.file.path, 'Teams');
+                const cloudinaryResult = await uploadCloudinary(req.file.path, 'Portfolio');
                 if (cloudinaryResult) { attachment = cloudinaryResult }
 
             } catch (fileError) {
@@ -31,17 +32,12 @@ export const create = async (req, res) => {
             }
         }
 
-        const result = await new TeamsModel({
+        const result = await new PortfolioModel({
             date_and_time: date_and_time || new Date(),
             date_and_time_format: createFormattedDate(date_and_time || new Date()),
-            first_name: first_name,
-            last_name: last_name,
-            full_name: first_name + ' ' + last_name,
-            phone: phone,
-            email: email,
-            role: role,
-            facebook_url: facebook_url,
-            linkedin_url: linkedin_url,
+            portfolio_name: portfolio_name,
+            description: description,
+            categories_id: categories_id,
             attachment: attachment
         }).save();
 
@@ -68,12 +64,20 @@ export const show = async (req, res) => {
         const searchQuery = new RegExp('.*' + search + '.*', 'i');
 
         // === search filter ===
-        const dataFilter = { $or: [{ full_name: { $regex: searchQuery } }] }
+        const dataFilter = { $or: [{ portfolio_name: { $regex: searchQuery } }] }
 
-        const [result, count] = await Promise.all([
-            TeamsModel.find(dataFilter).limit(limit).skip((page - 1) * limit).lean(),
-            TeamsModel.countDocuments(dataFilter)
+        const [portfolio, count] = await Promise.all([
+            PortfolioModel.find(dataFilter).populate('categories_id', 'categories_name').limit(limit).skip((page - 1) * limit).lean(),
+            PortfolioModel.countDocuments(dataFilter)
         ]);
+
+        const result = portfolio.map((port) => {
+            return {
+                ...port,
+                categories_id: port.categories_id._id,
+                categories_name: port.categories_id.categories_name
+            }
+        })
 
         if (result.length === 0) {
             return res.status(200).json({ success: false, message: "No Data Found" });
@@ -97,7 +101,10 @@ export const indvidual = async (req, res) => {
     try {
         const { id } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) { return res.status(400).json({ success: false, message: "Invalid ID Format" }) }
-        const result = await TeamsModel.findById(id).lean();
+
+        const [result] = await Promise.all([
+            PortfolioModel.findById(id).populate('categories_id', 'categories_name').lean(),
+        ]);
 
         if (!result) {
             return res.status(200).json({ success: false, message: "No Data Found" });
@@ -105,7 +112,11 @@ export const indvidual = async (req, res) => {
             return res.status(200).json({
                 success: true,
                 message: 'Item Show Success',
-                payload: result
+                payload: {
+                    ...result,
+                    categories_id: result.categories_id._id,
+                    categories_name: result.categories_id.categories_name
+                }
             });
         }
 
@@ -120,26 +131,24 @@ export const indvidual = async (req, res) => {
 export const update = async (req, res) => {
     try {
         const { id } = req.params
-        const { date_and_time, first_name, last_name, phone, email, role, facebook_url, linkedin_url } = req.body;
+        const { date_and_time, portfolio_name, description, categories_id } = req.body;
 
         // === Basic field validation ===
-        const { error } = teams_schema.validate(req.body, { errors: { wrap: { label: "" } } });
+        const { error } = portfolio_schema.validate(req.body, { errors: { wrap: { label: "" } } });
         if (error) { return res.status(400).json({ success: false, message: error.details[0].message }) }
 
-        const [isTeams, isExistPhone, isExistEmail] = await Promise.all([
-            TeamsModel.findById(id).lean(),
-            TeamsModel.exists({ phone: { $regex: new RegExp(`^${phone.trim()}$`, "i") }, _id: { $ne: id } }),
-            TeamsModel.exists({ email: { $regex: new RegExp(`^${email.trim()}$`, "i") }, _id: { $ne: id } })
+        const [isPortfolio, isExistPortfolio] = await Promise.all([
+            PortfolioModel.findById(id).lean(),
+            PortfolioModel.exists({ portfolio_name: { $regex: new RegExp(`^${portfolio_name.trim()}$`, "i") }, _id: { $ne: id } })
         ]);
 
-        if (!isTeams) { return res.status(404).json({ success: false, message: "Not Found By ID" }) }
-        if (isExistPhone) { return res.status(409).json({ success: false, message: "Service already exists. Try another." }) }
-        if (isExistEmail) { return res.status(409).json({ success: false, message: "Service already exists. Try another." }) }
+        if (!isPortfolio) { return res.status(404).json({ success: false, message: "Not Found By ID" }) }
+        if (isExistPortfolio) { return res.status(409).json({ success: false, message: "Portfolio already exists. Try another." }) }
 
         let attachment = isServices.attachment;
         if (req.file && req.file.path) {
             try {
-                const cloudinaryResult = await uploadCloudinary(req.file.path, 'Teams');
+                const cloudinaryResult = await uploadCloudinary(req.file.path, 'Portfolio');
                 if (cloudinaryResult) {
                     if (attachment && attachment.public_id) { await cloudinary.uploader.destroy(attachment.public_id) } // Delete old images from cloudinary
                     attachment = cloudinaryResult;
@@ -150,17 +159,12 @@ export const update = async (req, res) => {
             }
         }
 
-        const result = await TeamsModel.findByIdAndUpdate(id, {
+        const result = await PortfolioModel.findByIdAndUpdate(id, {
             date_and_time: date_and_time || new Date(),
             date_and_time_format: createFormattedDate(date_and_time || new Date()),
-            first_name: first_name,
-            last_name: last_name,
-            full_name: first_name + ' ' + last_name,
-            phone: phone,
-            email: email,
-            role: role,
-            facebook_url: facebook_url,
-            linkedin_url: linkedin_url,
+            portfolio_name: portfolio_name,
+            description: description,
+            categories_id: categories_id,
             attachment: attachment
         }, { new: true })
 
@@ -186,16 +190,16 @@ export const destroy = async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(id)) { return res.status(400).json({ success: false, message: "Invalid ID Format" }) }
 
         // === find items ===
-        const isTeams = await TeamsModel.findById(id).lean();
-        if (!isTeams) { return res.status(404).json({ success: false, message: "Item Not Found" }) }
-        const result = await TeamsModel.findByIdAndDelete(id);
+        const isPortfolio = await PortfolioModel.findById(id).lean();
+        if (!isPortfolio) { return res.status(404).json({ success: false, message: "Item Not Found" }) }
+        const result = await PortfolioModel.findByIdAndDelete(id);
 
         if (!result) {
             return res.status(200).json({ success: false, message: "Data Not Found" });
         } else {
-            
-            if (isTeams.attachment && isTeams.attachment.public_id) {
-                await cloudinary.uploader.destroy(isTeams.attachment.public_id);
+
+            if (isPortfolio.attachment && isPortfolio.attachment.public_id) {
+                await cloudinary.uploader.destroy(isPortfolio.attachment.public_id);
             }
 
             return res.status(200).json({
