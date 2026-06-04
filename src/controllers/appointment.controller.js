@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
 import { appointment_schema } from "#/validations/joi.schema.validation.js";
-import { createPagination } from "#/utils/common.utils.js";
+import { createPagination, createFormattedDate } from "#/utils/common.utils.js";
 import AppointmentModel from "#/models/appointment.model.js";
 
 export const create = async (req, res) => {
     try {
-        const { date_and_time, meeting_date_and_time, frist_name, last_name, phone, email, country, address, message, gmt_and_utc_timezone, meeting_time, meeting_period, meeting_with } = req.body;
+        const { date_and_time, meeting_date_and_time, first_name, last_name, phone, email, country, address, message, gmt_and_utc_timezone, meeting_time, meeting_period, meeting_with } = req.body;
         const { error } = appointment_schema.validate(req.body, { errors: { wrap: { label: "" } } });
         if (error) { return res.status(400).json({ success: false, message: error.details[0].message }) }
 
@@ -22,9 +22,9 @@ export const create = async (req, res) => {
             date_and_time_format: createFormattedDate(date_and_time || new Date()),
             meeting_date_and_time: meeting_date_and_time,
             meeting_date_and_time_format: createFormattedDate(meeting_date_and_time),
-            frist_name: frist_name,
+            first_name: first_name,
             last_name: last_name,
-            full_name: frist_name + ' ' + last_name,
+            full_name: first_name + ' ' + last_name,
             phone: phone,
             email: email,
             country: country,
@@ -111,7 +111,7 @@ export const indvidual = async (req, res) => {
 export const update = async (req, res) => {
     try {
         const { id } = req.params
-        const { date_and_time, meeting_date_and_time, frist_name, last_name, phone, email, country, address, message, gmt_and_utc_timezone, meeting_time, meeting_period, meeting_with, status } = req.body;
+        const { date_and_time, meeting_date_and_time, first_name, last_name, phone, email, country, address, message, gmt_and_utc_timezone, meeting_time, meeting_period, meeting_with, status } = req.body;
 
         // === Basic field validation ===
         const { error } = appointment_schema.validate(req.body, { errors: { wrap: { label: "" } } });
@@ -132,9 +132,9 @@ export const update = async (req, res) => {
             date_and_time_format: createFormattedDate(date_and_time || new Date()),
             meeting_date_and_time: meeting_date_and_time,
             meeting_date_and_time_format: createFormattedDate(meeting_date_and_time),
-            frist_name: frist_name,
+            first_name: first_name,
             last_name: last_name,
-            full_name: frist_name + ' ' + last_name,
+            full_name: first_name + ' ' + last_name,
             phone: phone,
             email: email,
             country: country,

@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 const AppointmentSchema = new mongoose.Schema({
     date_and_time: {
         type: Date,
-        required: [true, "Date and Time is required"],
         default: Date.now
     },
     date_and_time_format: {
@@ -19,7 +18,7 @@ const AppointmentSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    frist_name: {
+    first_name: {
         type: String,
         trim: true,
         required: [true, "First Name is required"],
@@ -73,7 +72,7 @@ const AppointmentSchema = new mongoose.Schema({
     gmt_and_utc_timezone: {
         type: String,
         required: [true, "GMT/UTC Timezone is required"],
-        enum: ["GMT+00:00 (UTC)", "GMT+01:00 (UTC+1)", "GMT+02:00 (UTC+2)", "GMT+03:00 (UTC+3)", "GMT+04:00 (UTC+4)", "GMT+05:00 (UTC+5)", "GMT+06:00 (UTC+6)", "GMT+06:30 (UTC+6:30)", "GMT+07:00 (UTC+7)", "GMT+08:00 (UTC+8)", "GMT+09:00 (UTC+9)", "GMT+10:00 (UTC+10)", "GMT+11:00 (UTC+11)", "GMT+12:00 (UTC+12)", "GMT-01:00 (UTC-1)", "GMT-02:00 (UTC-2)", "GMT-03:00 (UTC-3)", "GMT-04:00 (UTC-4)", "GMT-05:00 (UTC-5)", "GMT-06:00 (UTC-6)", "GMT-07:00 (UTC-7)", "GMT-08:00 (UTC-8)", "GMT-09:00 (UTC-9)", "GMT-10:00 (UTC-10)", "GMT-11:00 (UTC-11)", "GMT-12:00 (UTC-12)"]
+        enum: ["GMT+00:00", "GMT+01:00", "GMT+02:00", "GMT+03:00", "GMT+04:00", "GMT+05:00", "GMT+06:00", "GMT+06:30", "GMT+07:00", "GMT+08:00", "GMT+09:00", "GMT+10:00", "GMT+11:00", "GMT+12:00", "GMT-01:00", "GMT-02:00", "GMT-03:00", "GMT-04:00", "GMT-05:00", "GMT-06:00", "GMT-07:00", "GMT-08:00", "GMT-09:00", "GMT-10:00", "GMT-11:00", "GMT-12:00"]
     },
     meeting_time: {
         type: String,
@@ -88,7 +87,7 @@ const AppointmentSchema = new mongoose.Schema({
     meeting_with: {
         type: String,
         required: [true, "Meeting With is required"],
-        enum: ["meeting_with_owner", "digital_marketer", "project_manager"]
+        enum: ["meeting_with_owner", "meeting_with_digital_marketer", "meeting_with_project_manager"]
     },
     status: {
         type: String,

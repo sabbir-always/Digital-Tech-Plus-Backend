@@ -56,19 +56,19 @@ export const teams_schema = Joi.object({
 })
 
 export const appointment_schema = Joi.object({
-    date_and_time: Joi.date().required(),
+    date_and_time: Joi.date().optional().empty("").allow(null),
     meeting_date_and_time: Joi.date().required(),
     first_name: Joi.string().trim().min(3).max(15).required(),
     last_name: Joi.string().trim().min(3).max(15).required(),
     phone: Joi.string().trim().min(8).required(),
     email: Joi.string().email({ tlds: { allow: true } }).trim().min(8).max(50).lowercase().required(),
-    country: Joi.string().trim().min(3).max(30).required(),
+    country: Joi.string().trim().min(3).max(20).required(),
     address: Joi.string().trim().min(10).max(100).optional().empty("").allow(null),
     message: Joi.string().trim().min(10).optional().empty("").allow(null),
-    gmt_and_utc_timezone: Joi.string().valid("GMT+00:00 (UTC)", "GMT+01:00 (UTC+1)", "GMT+02:00 (UTC+2)", "GMT+03:00 (UTC+3)", "GMT+04:00 (UTC+4)", "GMT+05:00 (UTC+5)", "GMT+06:00 (UTC+6)", "GMT+06:30 (UTC+6:30)", "GMT+07:00 (UTC+7)", "GMT+08:00 (UTC+8)", "GMT+09:00 (UTC+9)", "GMT+10:00 (UTC+10)", "GMT+11:00 (UTC+11)", "GMT+12:00 (UTC+12)", "GMT-01:00 (UTC-1)", "GMT-02:00 (UTC-2)", "GMT-03:00 (UTC-3)", "GMT-04:00 (UTC-4)", "GMT-05:00 (UTC-5)", "GMT-06:00 (UTC-6)", "GMT-07:00 (UTC-7)", "GMT-08:00 (UTC-8)", "GMT-09:00 (UTC-9)", "GMT-10:00 (UTC-10)", "GMT-11:00 (UTC-11)", "GMT-12:00 (UTC-12)").required(),
+    gmt_and_utc_timezone: Joi.string().valid("GMT+00:00", "GMT+01:00", "GMT+02:00", "GMT+03:00", "GMT+04:00", "GMT+05:00", "GMT+06:00", "GMT+06:30", "GMT+07:00", "GMT+08:00", "GMT+09:00", "GMT+10:00", "GMT+11:00", "GMT+12:00", "GMT-01:00", "GMT-02:00", "GMT-03:00", "GMT-04:00", "GMT-05:00", "GMT-06:00", "GMT-07:00", "GMT-08:00", "GMT-09:00", "GMT-10:00", "GMT-11:00", "GMT-12:00").required(),
     meeting_time: Joi.string().valid("01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00").required(),
     meeting_period: Joi.string().valid("AM", "PM").required(),
-    meeting_with: Joi.string().valid("meeting_with_owner", "digital_marketer", "project_manager").required(),
+    meeting_with: Joi.string().valid("meeting_with_owner", "meeting_with_digital_marketer", "meeting_with_project_manager").required(),
     status: Joi.string().valid("pending", "cancelled", "postponed", "completed").optional().empty("").allow(null),
 })
 
