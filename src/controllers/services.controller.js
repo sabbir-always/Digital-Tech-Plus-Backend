@@ -5,6 +5,8 @@ import { services_schema } from "#/validations/joi.schema.validation.js";
 import { createPagination } from "#/utils/common.utils.js";
 import ServiceModel from "#/models/services.model.js";
 import CategoriesModel from "#/models/categories.model.js";
+import ReviewsModel from "#/models/reviews.model.js";
+import PackagesModel from "#/models/packages.model.js";
 
 export const create = async (req, res) => {
     try {
@@ -116,7 +118,12 @@ export const indvidual = async (req, res) => {
     try {
         const { id } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) { return res.status(400).json({ success: false, message: "Invalid ID Format" }) }
-        const result = await ServiceModel.findById(id).populate('categories_id', 'categories_name').lean();
+
+        const [result, reviews, packages] = await Promise.all([
+            ServiceModel.findById(id).populate('categories_id', 'categories_name').lean(),
+            ReviewsModel.find({ service_id: id }).lean(),
+            PackagesModel.find({ package_id: id }).lean(),
+        ]);
 
         if (!result) {
             return res.status(200).json({ success: false, message: "No Data Found" });
@@ -127,7 +134,9 @@ export const indvidual = async (req, res) => {
                 payload: {
                     ...result,
                     categories_id: result.categories_id._id,
-                    categories_name: result.categories_id.categories_name
+                    categories_name: result.categories_id.categories_name,
+                    reviews: reviews,
+                    packages: packages
                 }
             });
         }
@@ -250,7 +259,7 @@ export const destroy = async (req, res) => {
             }
 
             await Promise.all([CategoriesModel.findByIdAndUpdate(isServices.categories_id, { $inc: { total_service: -1 } })]);
-            
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Destroy Success',
