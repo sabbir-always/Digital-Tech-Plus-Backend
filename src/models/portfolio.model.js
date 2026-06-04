@@ -31,7 +31,7 @@ const PortfolioSchema = new mongoose.Schema({
         required: [true, "Categories is required"]
     },
     attachment: {
-        type: String,
+        type: Object,
         default: null
     },
     status: {

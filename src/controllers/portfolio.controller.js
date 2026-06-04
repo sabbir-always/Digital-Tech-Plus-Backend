@@ -17,7 +17,7 @@ export const create = async (req, res) => {
             CategoriesModel.findById(categories_id).lean()
         ]);
 
-        if (isExistPortfolio) { return res.status(409).json({ success: false, message: "Phone already exists. Try another." }) }
+        if (isExistPortfolio) { return res.status(409).json({ success: false, message: "Portfolio already exists. Try another." }) }
         if (!isCategories) { return res.status(404).json({ success: false, message: "Not Found By ID" }) }
 
         let attachment = null;
@@ -42,6 +42,7 @@ export const create = async (req, res) => {
         }).save();
 
         if (result) {
+            await Promise.all([CategoriesModel.findByIdAndUpdate(categories_id, { $inc: { total_service: 1 } })]);
             return res.status(201).json({
                 success: true,
                 message: 'Item Create Success',
@@ -169,6 +170,12 @@ export const update = async (req, res) => {
         }, { new: true })
 
         if (result) {
+            if (isPortfolio.categories_id.toString() !== categories_id) {
+                await Promise.all([
+                    CategoriesModel.findByIdAndUpdate(categories_id, { $inc: { total_service: 1 } }),
+                    CategoriesModel.findByIdAndUpdate(isPortfolio.categories_id, { $inc: { total_service: -1 } }),
+                ]);
+            }
             return res.status(200).json({
                 success: true,
                 message: 'Item Update Success',
@@ -197,11 +204,10 @@ export const destroy = async (req, res) => {
         if (!result) {
             return res.status(200).json({ success: false, message: "Data Not Found" });
         } else {
-
             if (isPortfolio.attachment && isPortfolio.attachment.public_id) {
                 await cloudinary.uploader.destroy(isPortfolio.attachment.public_id);
             }
-
+            await Promise.all([CategoriesModel.findByIdAndUpdate(isPortfolio.categories_id, { $inc: { total_service: -1 } })]);
             return res.status(200).json({
                 success: true,
                 message: 'Item Destroy Success',

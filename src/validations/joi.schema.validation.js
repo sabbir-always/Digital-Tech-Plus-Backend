@@ -47,6 +47,7 @@ export const portfolio_schema = Joi.object({
     date_and_time: Joi.date().required(),
     portfolio_name: Joi.string().trim().min(3).max(30).required(),
     description: Joi.string().trim().min(50).max(160).required(),
+    categories_id: Joi.string().trim().required(),
     attachment: Joi.any().optional().empty("").allow(null),
     status: Joi.string().valid("active", "inactive").optional().empty("").allow(null)
 })
@@ -58,8 +59,8 @@ export const teams_schema = Joi.object({
     phone: Joi.string().trim().min(11).max(11).required(),
     email: Joi.string().email({ tlds: { allow: true } }).trim().min(8).max(50).lowercase().required(),
     role: Joi.string().trim().min(3).max(30).required(),
-    facebook_url: Joi.string().trim().optional().empty("").allow(null),
-    linkedin_url: Joi.string().trim().optional().empty("").allow(null),
+    facebook_id: Joi.string().trim().optional().empty("").allow(null),
+    linkedin_id: Joi.string().trim().optional().empty("").allow(null),
     attachment: Joi.any().optional().empty("").allow(null)
 })
 

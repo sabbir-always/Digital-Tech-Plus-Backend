@@ -7,7 +7,7 @@ import TeamsModel from "#/models/teams.model.js";
 
 export const create = async (req, res) => {
     try {
-        const { date_and_time, first_name, last_name, phone, email, role, facebook_url, linkedin_url } = req.body;
+        const { date_and_time, first_name, last_name, phone, email, role, facebook_id, linkedin_id } = req.body;
         const { error } = teams_schema.validate(req.body, { errors: { wrap: { label: "" } } });
         if (error) { return res.status(400).json({ success: false, message: error.details[0].message }) }
 
@@ -40,8 +40,8 @@ export const create = async (req, res) => {
             phone: phone,
             email: email,
             role: role,
-            facebook_url: facebook_url,
-            linkedin_url: linkedin_url,
+            facebook_id: facebook_id,
+            linkedin_id: linkedin_id,
             attachment: attachment
         }).save();
 
@@ -120,7 +120,7 @@ export const indvidual = async (req, res) => {
 export const update = async (req, res) => {
     try {
         const { id } = req.params
-        const { date_and_time, first_name, last_name, phone, email, role, facebook_url, linkedin_url } = req.body;
+        const { date_and_time, first_name, last_name, phone, email, role, facebook_id, linkedin_id } = req.body;
 
         // === Basic field validation ===
         const { error } = teams_schema.validate(req.body, { errors: { wrap: { label: "" } } });
@@ -159,8 +159,8 @@ export const update = async (req, res) => {
             phone: phone,
             email: email,
             role: role,
-            facebook_url: facebook_url,
-            linkedin_url: linkedin_url,
+            facebook_id: facebook_id,
+            linkedin_id: linkedin_id,
             attachment: attachment
         }, { new: true })
 

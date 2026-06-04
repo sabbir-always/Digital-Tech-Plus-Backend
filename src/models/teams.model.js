@@ -51,18 +51,18 @@ const TeamsSchema = new mongoose.Schema({
         minlength: [3, "Title must be at least 3 characters"],
         maxlength: [30, "Title cannot exceed 30 characters"]
     },
-    facebook_url: {
+    facebook_id: {
         type: String,
         trim: true,
         default: null
     },
-    linkedin_url: {
+    linkedin_id: {
         type: String,
         trim: true,
         default: null
     },
     attachment: {
-        type: String,
+        type: Object,
         default: null
     }
 }, { timestamps: true });
