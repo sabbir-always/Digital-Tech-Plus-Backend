@@ -88,7 +88,6 @@ export const review_schema = Joi.object({
 
 export const orders_schema = Joi.object({
     date_and_time: Joi.date().required(),
-    authentication_id: Joi.string().trim().required(),
     service_id: Joi.string().trim().required(),
     package_id: Joi.string().trim().required(),
     paid_amount: Joi.number().min(0).optional().empty("").allow(null),

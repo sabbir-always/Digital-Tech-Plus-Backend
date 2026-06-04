@@ -8,7 +8,8 @@ import OrdersModel from "#/models/orders.model.js";
 
 export const create = async (req, res) => {
     try {
-        const { date_and_time, authentication_id, service_id, package_id } = req.body;
+        const authentication_id = req.auth._id;
+        const { date_and_time, service_id, package_id } = req.body;
         const { error } = orders_schema.validate(req.body, { errors: { wrap: { label: "" } } });
         if (error) { return res.status(400).json({ success: false, message: error.details[0].message }) }
         if (!mongoose.Types.ObjectId.isValid(authentication_id)) { return res.status(400).json({ success: false, message: "Invalid Authentication ID format" }) }
@@ -185,8 +186,9 @@ export const indvidual = async (req, res) => {
 
 export const update = async (req, res) => {
     try {
-        const { id } = req.params
-        const { date_and_time, authentication_id, service_id, package_id, paid_amount, payment_status, payment_method, message, status } = req.body;
+        const { id } = req.params;
+        const authentication_id = req.auth._id;
+        const { date_and_time, service_id, package_id, paid_amount, payment_status, payment_method, message, status } = req.body;
 
         // === Basic field validation ===
         const { error } = orders_schema.validate(req.body, { errors: { wrap: { label: "" } } });

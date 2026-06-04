@@ -20,7 +20,6 @@ export const create = async (req, res) => {
         ]);
 
         if (!isAuthentication) { return res.status(409).json({ success: false, message: "Not Found By ID" }) }
-        if (isAuthentication.status !== 'active') { return res.status(403).json({ success: false, message: "Account is not active" }) }
         if (!isServices) { return res.status(404).json({ success: false, message: "Not Found By ID" }) }
 
         const result = await new ReviewsModel({
@@ -186,7 +185,6 @@ export const update = async (req, res) => {
 
         if (!isReviews) { return res.status(404).json({ success: false, message: "Not Found By ID" }) }
         if (!isAuthentication) { return res.status(404).json({ success: false, message: "Authentication Not Found" }) }
-        if (isAuthentication.status !== 'active') { return res.status(403).json({ success: false, message: "Account is not active" }) }
         if (!isServices) { return res.status(404).json({ success: false, message: "Services Not Found" }) }
 
         const result = await ReviewsModel.findByIdAndUpdate(id, {
