@@ -136,7 +136,7 @@ export const update = async (req, res) => {
         if (isExistPhone) { return res.status(409).json({ success: false, message: "Service already exists. Try another." }) }
         if (isExistEmail) { return res.status(409).json({ success: false, message: "Service already exists. Try another." }) }
 
-        let attachment = isServices.attachment;
+        let attachment = isTeams.attachment;
         if (req.file && req.file.path) {
             try {
                 const cloudinaryResult = await uploadCloudinary(req.file.path, 'Teams');
