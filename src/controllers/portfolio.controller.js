@@ -8,7 +8,7 @@ import CategoriesModel from "#/models/categories.model.js";
 
 export const create = async (req, res) => {
     try {
-        const { date_and_time, portfolio_name, description, categories_id } = req.body;
+        const { date_and_time, portfolio_name, description, categories_id, drive_link } = req.body;
         const { error } = portfolio_schema.validate(req.body, { errors: { wrap: { label: "" } } });
         if (error) { return res.status(400).json({ success: false, message: error.details[0].message }) }
 
@@ -38,6 +38,7 @@ export const create = async (req, res) => {
             portfolio_name: portfolio_name,
             description: description,
             categories_id: categories_id,
+            drive_link: drive_link,
             attachment: attachment
         }).save();
 
@@ -132,7 +133,7 @@ export const indvidual = async (req, res) => {
 export const update = async (req, res) => {
     try {
         const { id } = req.params
-        const { date_and_time, portfolio_name, description, categories_id, status } = req.body;
+        const { date_and_time, portfolio_name, description, categories_id, drive_link, status } = req.body;
 
         // === Basic field validation ===
         const { error } = portfolio_schema.validate(req.body, { errors: { wrap: { label: "" } } });
@@ -166,6 +167,7 @@ export const update = async (req, res) => {
             portfolio_name: portfolio_name,
             description: description,
             categories_id: categories_id,
+            drive_link: drive_link,
             status: status,
             attachment: attachment
         }, { new: true })

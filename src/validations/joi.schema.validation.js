@@ -49,6 +49,7 @@ export const portfolio_schema = Joi.object({
     description: Joi.string().trim().min(50).max(160).required(),
     categories_id: Joi.string().trim().required(),
     attachment: Joi.any().optional().empty("").allow(null),
+    drive_link: Joi.string().trim().optional().empty("").allow(null),
     status: Joi.string().valid("active", "inactive").optional().empty("").allow(null)
 })
 

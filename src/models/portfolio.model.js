@@ -30,6 +30,11 @@ const PortfolioSchema = new mongoose.Schema({
         ref: "Categories",
         required: [true, "Categories is required"]
     },
+    drive_link: {
+        type: String,
+        trim: true,
+        default: null
+    },
     attachment: {
         type: Object,
         default: null
