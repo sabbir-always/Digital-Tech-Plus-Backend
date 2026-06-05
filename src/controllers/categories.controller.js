@@ -127,8 +127,8 @@ export const destroy = async (req, res) => {
         const isCategories = await CategoriesModel.findById(id).lean();
         if (!isCategories) { return res.status(404).json({ success: false, message: "Item Not Found" }) }
 
-        if (isCategories.total_items > 0) {
-            return res.status(400).json({ success: false, message: "The Category cannot be deleted because it contains items." });
+        if (isCategories.total_service > 0) {
+            return res.status(400).json({ success: false, message: "The Category cannot be deleted because it contains service." });
         }
 
         const result = await CategoriesModel.findByIdAndDelete(id);
