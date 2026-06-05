@@ -120,7 +120,7 @@ export const indvidual = async (req, res) => {
 export const update = async (req, res) => {
     try {
         const { id } = req.params
-        const { date_and_time, first_name, last_name, phone, email, role, facebook_id, linkedin_id } = req.body;
+        const { date_and_time, first_name, last_name, phone, email, role, facebook_id, linkedin_id, status } = req.body;
 
         // === Basic field validation ===
         const { error } = teams_schema.validate(req.body, { errors: { wrap: { label: "" } } });
@@ -161,6 +161,7 @@ export const update = async (req, res) => {
             role: role,
             facebook_id: facebook_id,
             linkedin_id: linkedin_id,
+            status: status,
             attachment: attachment
         }, { new: true })
 
@@ -193,7 +194,7 @@ export const destroy = async (req, res) => {
         if (!result) {
             return res.status(200).json({ success: false, message: "Data Not Found" });
         } else {
-            
+
             if (isTeams.attachment && isTeams.attachment.public_id) {
                 await cloudinary.uploader.destroy(isTeams.attachment.public_id);
             }

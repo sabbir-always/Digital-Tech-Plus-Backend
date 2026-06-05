@@ -64,6 +64,12 @@ const TeamsSchema = new mongoose.Schema({
     attachment: {
         type: Object,
         default: null
+    },
+    status: {
+        type: String,
+        required: [true, "Status is required"],
+        enum: ["active", "inactive"],
+        default: "active"
     }
 }, { timestamps: true });
 

@@ -61,7 +61,8 @@ export const teams_schema = Joi.object({
     role: Joi.string().trim().min(3).max(30).required(),
     facebook_id: Joi.string().trim().optional().empty("").allow(null),
     linkedin_id: Joi.string().trim().optional().empty("").allow(null),
-    attachment: Joi.any().optional().empty("").allow(null)
+    attachment: Joi.any().optional().empty("").allow(null),
+    status: Joi.string().valid("active", "inactive").optional().empty("").allow(null)
 })
 
 export const appointment_schema = Joi.object({

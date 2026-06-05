@@ -132,7 +132,7 @@ export const indvidual = async (req, res) => {
 export const update = async (req, res) => {
     try {
         const { id } = req.params
-        const { date_and_time, portfolio_name, description, categories_id } = req.body;
+        const { date_and_time, portfolio_name, description, categories_id, status } = req.body;
 
         // === Basic field validation ===
         const { error } = portfolio_schema.validate(req.body, { errors: { wrap: { label: "" } } });
@@ -166,6 +166,7 @@ export const update = async (req, res) => {
             portfolio_name: portfolio_name,
             description: description,
             categories_id: categories_id,
+            status: status,
             attachment: attachment
         }, { new: true })
 
