@@ -85,7 +85,7 @@ export const packages_schema = Joi.object({
     service_id: Joi.string().trim().required(),
     package_name: Joi.string().trim().min(3).max(30).required(),
     price: Joi.number().min(0).required(),
-    features: Joi.array().items(Joi.string().trim().min(3).max(30)).min(1).required(),
+    features: Joi.array().items(Joi.string().trim().min(3).max(30)).min(1).max(5).required(),
     status: Joi.string().valid("active", "inactive").optional().empty("").allow(null)
 })
 

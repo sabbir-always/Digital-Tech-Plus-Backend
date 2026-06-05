@@ -146,7 +146,7 @@ export const update = async (req, res) => {
         if (!isPortfolio) { return res.status(404).json({ success: false, message: "Not Found By ID" }) }
         if (isExistPortfolio) { return res.status(409).json({ success: false, message: "Portfolio already exists. Try another." }) }
 
-        let attachment = isServices.attachment;
+        let attachment = isPortfolio.attachment;
         if (req.file && req.file.path) {
             try {
                 const cloudinaryResult = await uploadCloudinary(req.file.path, 'Portfolio');
