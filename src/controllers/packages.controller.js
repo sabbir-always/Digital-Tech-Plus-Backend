@@ -113,7 +113,7 @@ export const indvidual = async (req, res) => {
 export const update = async (req, res) => {
     try {
         const { id } = req.params
-        const { service_id, package_name, price, features } = req.body;
+        const { service_id, package_name, price, features, status } = req.body;
 
         // === Basic field validation ===
         const { error } = packages_schema.validate(req.body, { errors: { wrap: { label: "" } } });
@@ -135,7 +135,8 @@ export const update = async (req, res) => {
             service_id: service_id,
             package_name: package_name,
             price: price,
-            features: features
+            features: features,
+            status: status
         }, { new: true })
 
         if (result) {

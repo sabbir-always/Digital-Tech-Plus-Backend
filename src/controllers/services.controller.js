@@ -152,7 +152,7 @@ export const indvidual = async (req, res) => {
 export const update = async (req, res) => {
     try {
         const { id } = req.params
-        const { service_name, short_description, long_description, categories_id, basic_price } = req.body;
+        const { service_name, short_description, long_description, categories_id, basic_price, status } = req.body;
 
         // === Basic field validation ===
         const { error } = services_schema.validate(req.body, { errors: { wrap: { label: "" } } });
@@ -209,6 +209,7 @@ export const update = async (req, res) => {
             long_description: long_description,
             categories_id: categories_id,
             basic_price: basic_price,
+            status: status,
             attachment: attachment
         }, { new: true })
 
