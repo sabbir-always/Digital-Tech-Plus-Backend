@@ -62,7 +62,7 @@ export const show = async (req, res) => {
         const dataFilter = { $or: [{ full_name: { $regex: searchQuery } }, { email: { $regex: searchQuery } }, { phone: { $regex: searchQuery } }] }
 
         const [result, count] = await Promise.all([
-            AppointmentModel.find(dataFilter).limit(limit).skip((page - 1) * limit).lean(),
+            AppointmentModel.find(dataFilter).sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
             AppointmentModel.countDocuments(dataFilter)
         ]);
 

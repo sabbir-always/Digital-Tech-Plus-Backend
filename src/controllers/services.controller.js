@@ -84,7 +84,7 @@ export const show = async (req, res) => {
         const dataFilter = { $or: [{ service_name: { $regex: searchQuery } }] }
 
         const [services, count] = await Promise.all([
-            ServiceModel.find(dataFilter).populate('categories_id', 'categories_name').limit(limit).skip((page - 1) * limit).lean(),
+            ServiceModel.find(dataFilter).populate('categories_id', 'categories_name').sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
             ServiceModel.countDocuments(dataFilter)
         ]);
 
@@ -259,7 +259,6 @@ export const destroy = async (req, res) => {
             }
 
             await Promise.all([CategoriesModel.findByIdAndUpdate(isServices.categories_id, { $inc: { total_service: -1 } })]);
-
             return res.status(200).json({
                 success: true,
                 message: 'Item Destroy Success',

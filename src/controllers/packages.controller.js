@@ -52,7 +52,7 @@ export const show = async (req, res) => {
         const dataFilter = { $or: [{ package_name: { $regex: searchQuery } }] }
 
         const [packages, count] = await Promise.all([
-            PackagesModel.find(dataFilter).populate('service_id', 'service_name').limit(limit).skip((page - 1) * limit).lean(),
+            PackagesModel.find(dataFilter).populate('service_id', 'service_name').sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
             PackagesModel.countDocuments(dataFilter)
         ]);
 

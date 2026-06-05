@@ -71,7 +71,7 @@ export const show = async (req, res) => {
         const dataFilter = { $or: [{ full_name: { $regex: searchQuery } }] }
 
         const [result, count] = await Promise.all([
-            TeamsModel.find(dataFilter).limit(limit).skip((page - 1) * limit).lean(),
+            TeamsModel.find(dataFilter).sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
             TeamsModel.countDocuments(dataFilter)
         ]);
 

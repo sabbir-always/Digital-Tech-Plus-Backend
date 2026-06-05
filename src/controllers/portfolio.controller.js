@@ -68,7 +68,7 @@ export const show = async (req, res) => {
         const dataFilter = { $or: [{ portfolio_name: { $regex: searchQuery } }] }
 
         const [portfolio, count] = await Promise.all([
-            PortfolioModel.find(dataFilter).populate('categories_id', 'categories_name').limit(limit).skip((page - 1) * limit).lean(),
+            PortfolioModel.find(dataFilter).populate('categories_id', 'categories_name').sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
             PortfolioModel.countDocuments(dataFilter)
         ]);
 
