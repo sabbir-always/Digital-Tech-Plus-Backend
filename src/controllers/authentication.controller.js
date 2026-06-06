@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs"
 import dotenv from 'dotenv';
 dotenv.config();
-import AuthenticationSchema from "#/models/authentication.model.js";
 import { createJSONWebToken, createPagination, createFormattedDate } from "#/utils/common.utils.js";
 import { auth_change_password_schema, auth_create_schema, auth_signin_schema, auth_update_schema } from "#/validations/joi.schema.validation.js";
+import AuthenticationModel from "#/models/authentication.model.js";
 
 export const create = async (req, res) => {
     try {
@@ -198,7 +198,7 @@ export const signin = async (req, res) => {
         const { error } = auth_signin_schema.validate(req.body, { errors: { wrap: { label: "" } } });
         if (error) { return res.status(400).json({ success: false, message: error.details[0].message }) }
 
-        const isExistedUsers = await AuthenticationSchema.findOne({ $or: [{ email: { $regex: new RegExp(`^${users.trim()}$`, "i") } }, { phone: { $regex: new RegExp(`^${users.trim()}$`, "i") } }] }).lean();
+        const isExistedUsers = await AuthenticationModel.findOne({ $or: [{ email: { $regex: new RegExp(`^${users.trim()}$`, "i") } }, { phone: { $regex: new RegExp(`^${users.trim()}$`, "i") } }] }).lean();
         if (!isExistedUsers) { return res.status(401).json({ success: false, message: "Invalid credentials. Try again." }) }
 
         if (isExistedUsers.status !== "active") {
