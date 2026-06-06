@@ -99,6 +99,41 @@ export const show = async (req, res) => {
     }
 }
 
+export const show_data = async (req, res) => {
+    try {
+        const search = req.query.search || "";
+        const limit = Number(req.query.limit);
+        const searchQuery = new RegExp('.*' + search + '.*', 'i');
+
+        // === search filter ===
+        const dataFilter = { $or: [{ portfolio_name: { $regex: searchQuery } }] }
+
+        const portfolio = await PortfolioModel.find(dataFilter).populate('categories_id', 'categories_name').sort({ createdAt: -1 }).limit(limit).lean();
+        const result = portfolio.map((port) => {
+            return {
+                ...port,
+                categories_id: port.categories_id._id,
+                categories_name: port.categories_id.categories_name
+            }
+        })
+
+        if (result.length === 0) {
+            return res.status(200).json({ success: false, message: "No Data Found" });
+        } else {
+            return res.status(200).json({
+                success: true,
+                message: 'Item Show Success',
+                payload: result
+            });
+        }
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message || 'Internal Server Error'
+        });
+    }
+}
+
 export const indvidual = async (req, res) => {
     try {
         const { id } = req.params;
