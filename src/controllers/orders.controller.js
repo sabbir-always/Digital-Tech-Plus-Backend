@@ -1,30 +1,33 @@
 import mongoose from "mongoose";
 import { orders_schema } from "#/validations/joi.schema.validation.js";
 import { createFormattedDate, createPagination } from "#/utils/common.utils.js";
-import ServiceModel from "#/models/services.model.js";
 import AuthenticationModel from "#/models/authentication.model.js";
 import PackagesModel from "#/models/packages.model.js";
+import ServiceModel from "#/models/services.model.js";
 import OrdersModel from "#/models/orders.model.js";
 
 export const create = async (req, res) => {
     try {
         const authentication_id = req.auth._id;
-        const { date_and_time, service_id, package_id } = req.body;
+        const service_id = req.params.service_id;
+        const { date_and_time, package_id } = req.body;
         const { error } = orders_schema.validate(req.body, { errors: { wrap: { label: "" } } });
         if (error) { return res.status(400).json({ success: false, message: error.details[0].message }) }
         if (!mongoose.Types.ObjectId.isValid(authentication_id)) { return res.status(400).json({ success: false, message: "Invalid Authentication ID format" }) }
         if (!mongoose.Types.ObjectId.isValid(service_id)) { return res.status(400).json({ success: false, message: "Invalid Service ID format" }) }
         if (!mongoose.Types.ObjectId.isValid(package_id)) { return res.status(400).json({ success: false, message: "Invalid Package ID format" }) }
 
-        const [isAuthentication, isServices, isPackages] = await Promise.all([
+        const [isAuthentication, isServices, isPackages, isMatchPackage] = await Promise.all([
             AuthenticationModel.findById(authentication_id).lean(),
             ServiceModel.findById(service_id).lean(),
-            PackagesModel.findById(package_id).lean()
+            PackagesModel.findById(package_id).lean(),
+            PackagesModel.findOne({ _id: package_id, service_id: service_id }).lean()
         ]);
 
         if (!isAuthentication) { return res.status(409).json({ success: false, message: "Not Found By ID" }) }
         if (!isServices) { return res.status(404).json({ success: false, message: "Not Found By ID" }) }
         if (!isPackages) { return res.status(404).json({ success: false, message: "Not Found By ID" }) }
+        if (!isMatchPackage) { return res.status(400).json({ success: false, message: "Package does not belong to this service" }) }
 
         const result = await new OrdersModel({
             date_and_time: date_and_time || new Date(),
@@ -186,29 +189,31 @@ export const indvidual = async (req, res) => {
 
 export const update = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { service_id, id } = req.params;
         const authentication_id = req.auth._id;
-        const { date_and_time, service_id, package_id, paid_amount, payment_status, payment_method, message, status } = req.body;
+        const { date_and_time, package_id, paid_amount, payment_status, payment_method, message, status } = req.body;
 
         // === Basic field validation ===
         const { error } = orders_schema.validate(req.body, { errors: { wrap: { label: "" } } });
         if (error) { return res.status(400).json({ success: false, message: error.details[0].message }) }
         if (!mongoose.Types.ObjectId.isValid(id)) { return res.status(400).json({ success: false, message: "Invalid ID Format" }) }
-        if (!mongoose.Types.ObjectId.isValid(authentication_id)) { return res.status(400).json({ success: false, message: "Invalid ID format" }) }
         if (!mongoose.Types.ObjectId.isValid(service_id)) { return res.status(400).json({ success: false, message: "Invalid ID format" }) }
+        if (!mongoose.Types.ObjectId.isValid(authentication_id)) { return res.status(400).json({ success: false, message: "Invalid ID format" }) }
         if (!mongoose.Types.ObjectId.isValid(package_id)) { return res.status(400).json({ success: false, message: "Invalid ID format" }) }
 
-        const [isOrders, isAuthentication, isServices, isPackages] = await Promise.all([
+        const [isOrders, isAuthentication, isServices, isPackages, isMatchPackage] = await Promise.all([
             OrdersModel.findById(id).lean(),
             AuthenticationModel.findById(authentication_id).lean(),
             ServiceModel.findById(service_id).lean(),
-            PackagesModel.findById(package_id).lean()
+            PackagesModel.findById(package_id).lean(),
+            PackagesModel.findOne({ _id: package_id, service_id: service_id }).lean()
         ]);
 
         if (!isOrders) { return res.status(404).json({ success: false, message: "Not Found By ID" }) }
         if (!isAuthentication) { return res.status(404).json({ success: false, message: "Authentication Not Found" }) }
         if (!isServices) { return res.status(404).json({ success: false, message: "Services Not Found" }) }
         if (!isPackages) { return res.status(404).json({ success: false, message: "Packages Not Found" }) }
+        if (!isMatchPackage) { return res.status(400).json({ success: false, message: "Package does not belong to this service" }) }
 
         const result = await ReviewsModel.findByIdAndUpdate(id, {
             date_and_time: date_and_time || new Date(),

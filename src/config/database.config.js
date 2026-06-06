@@ -10,7 +10,7 @@ export const databaseConnect = async () => {
     try {
         if (cached.conn) return cached.conn;
         if (!cached.promise) {
-            cached.promise = mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/polytechnic", { bufferCommands: false })
+            cached.promise = mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/database", { bufferCommands: false })
         }
 
         cached.conn = await cached.promise;

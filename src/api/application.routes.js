@@ -67,10 +67,10 @@ routes.put("/reviews/update/:id", isSignin, authorizeRoles("superadmin", "anonym
 routes.delete("/reviews/delete/:id", isSignin, authorizeRoles("superadmin"), reviews.destroy)
 
 // Private routes || http://localhost:8000/api/v1/orders/create
-routes.post("/orders/create", isSignin, authorizeRoles("superadmin", "anonymous"), orders.create)
+routes.post("/orders/service/:service_id/create", isSignin, authorizeRoles("superadmin", "anonymous"), orders.create)
 routes.get("/orders/show", isSignin, authorizeRoles("superadmin"), orders.show)
 routes.get("/orders/indv/:id", isSignin, authorizeRoles("superadmin"), orders.indvidual)
-routes.put("/orders/update/:id", isSignin, authorizeRoles("superadmin"), orders.update)
+routes.put("/orders/service/:service_id/update/:id", isSignin, authorizeRoles("superadmin"), orders.update)
 routes.delete("/orders/delete/:id", isSignin, authorizeRoles("superadmin"), orders.destroy)
 
 // Private routes || http://localhost:8000/api/v1/appointments/create
