@@ -100,7 +100,7 @@ export const show_data = async (req, res) => {
         const searchQuery = new RegExp('.*' + search + '.*', 'i');
 
         // === search filter ===
-        const dataFilter = { $or: [{ full_name: { $regex: searchQuery } }] }
+        const dataFilter = { status: "active", $or: [{ full_name: { $regex: searchQuery } }] }
         const result = await TeamsModel.find(dataFilter).sort({ createdAt: -1 }).limit(limit).lean()
 
         if (result.length === 0) {

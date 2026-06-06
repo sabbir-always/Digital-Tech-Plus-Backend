@@ -121,7 +121,7 @@ export const show_data = async (req, res) => {
         const searchQuery = new RegExp('.*' + search + '.*', 'i');
 
         // === search filter ===
-        const dataFilter = { $or: [{ service_name: { $regex: searchQuery } }] }
+        const dataFilter = { status: "active", $or: [{ service_name: { $regex: searchQuery } }] }
 
         const services = await ServiceModel.find(dataFilter).populate('categories_id', 'categories_name').sort({ createdAt: -1 }).limit(limit).lean();
         const result = services.map((service) => {

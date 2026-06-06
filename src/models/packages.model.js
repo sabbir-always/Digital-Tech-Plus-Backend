@@ -22,12 +22,6 @@ const PackagesSchema = new mongoose.Schema({
         type: [String],
         required: [true, "Features are required"],
         validate: { validator: function (v) { return v.length > 0 }, message: "At least one feature is required" }
-    },
-    status: {
-        type: String,
-        required: [true, "Status is required"],
-        enum: ["active", "inactive"],
-        default: "active"
     }
 }, { timestamps: true });
 

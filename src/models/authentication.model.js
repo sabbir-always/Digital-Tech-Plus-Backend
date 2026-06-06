@@ -48,7 +48,7 @@ const AuthenticationSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, "Password is required"],
-        minlength: [8, "Password must be at least 8 characters"],
+        minlength: [5, "Password must be at least 5 characters"],
         set: (value) => bcrypt.hashSync(value, bcrypt.genSaltSync(10))
     },
     role: {

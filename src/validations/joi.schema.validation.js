@@ -5,7 +5,7 @@ export const auth_create_schema = Joi.object({
     last_name: Joi.string().trim().min(3).max(15).required(),
     phone: Joi.string().trim().min(11).max(11).required(),
     email: Joi.string().email({ tlds: { allow: true } }).trim().min(8).max(50).lowercase().required(),
-    password: Joi.string().min(8).max(15).required(),
+    password: Joi.string().min(5).max(15).required(),
     confirm_password: Joi.string().valid(Joi.ref('password')).required()
 })
 
@@ -20,7 +20,7 @@ export const auth_update_schema = Joi.object({
 
 export const auth_change_password_schema = Joi.object({
     old_password: Joi.string().required(),
-    new_password: Joi.string().min(8).max(15).required(),
+    new_password: Joi.string().min(5).max(15).required(),
     confirm_password: Joi.string().valid(Joi.ref('new_password')).required()
 });
 
@@ -87,8 +87,7 @@ export const packages_schema = Joi.object({
     service_id: Joi.string().trim().required(),
     package_name: Joi.string().trim().min(3).max(30).required(),
     price: Joi.number().min(0).required(),
-    features: Joi.array().items(Joi.string().trim().min(3).max(30)).min(1).max(5).required(),
-    status: Joi.string().valid("active", "inactive").optional().empty("").allow(null)
+    features: Joi.array().items(Joi.string().trim().min(3).max(30)).min(1).max(5).required()
 })
 
 export const review_schema = Joi.object({

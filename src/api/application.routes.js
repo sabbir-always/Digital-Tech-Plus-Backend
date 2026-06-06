@@ -13,72 +13,72 @@ import upload from "#/multer/upload.multer.js";
 const routes = express.Router();
 
 // Public routes || http://localhost:8000/api/v1/authentication/create
-routes.post("/authentication/create", authentication.create)
+routes.post("/authentication/create", isSignin, authorizeRoles("superadmin"), authentication.create)
 routes.post("/authentication/signin", authentication.signin)
-routes.get("/authentication/show", authentication.show)
-routes.get("/authentication/indv/:id", authentication.single)
-routes.put("/authentication/update/:id", authentication.update)
-routes.delete("/authentication/delete/:id", authentication.destroy)
-routes.put("/authentication/change-password", isSignin, authentication.change_password)
+routes.get("/authentication/show", isSignin, authorizeRoles("superadmin"), authentication.show)
+routes.get("/authentication/indv/:id", isSignin, authorizeRoles("superadmin"), authentication.single)
+routes.put("/authentication/update/:id", isSignin, authorizeRoles("superadmin"), authentication.update)
+routes.delete("/authentication/delete/:id", isSignin, authorizeRoles("superadmin"), authentication.destroy)
+routes.put("/authentication/change-password", isSignin, authorizeRoles("superadmin", "anonymous"), authentication.change_password)
 
 // Private routes || http://localhost:8000/api/v1/categories/create
-routes.post("/categories/create", categories.create)
-routes.get("/categories/show", categories.show)
-routes.get("/categories/indv/:id", categories.indvidual)
-routes.put("/categories/update/:id", categories.update)
-routes.delete("/categories/delete/:id", categories.destroy)
+routes.post("/categories/create", isSignin, authorizeRoles("superadmin"), categories.create)
+routes.get("/categories/show", isSignin, authorizeRoles("superadmin"), categories.show)
+routes.get("/categories/indv/:id", isSignin, authorizeRoles("superadmin"), categories.indvidual)
+routes.put("/categories/update/:id", isSignin, authorizeRoles("superadmin"), categories.update)
+routes.delete("/categories/delete/:id", isSignin, authorizeRoles("superadmin"), categories.destroy)
 
 // Private routes || http://localhost:8000/api/v1/services/create
-routes.post("/services/create", upload.array("attachment"), services.create)
-routes.get("/services/show", services.show)
+routes.post("/services/create", isSignin, authorizeRoles("superadmin"), upload.array("attachment"), services.create)
+routes.get("/services/show", isSignin, authorizeRoles("superadmin"), services.show)
 routes.get("/services/show-data", services.show_data)
 routes.get("/services/indv/:id", services.indvidual)
-routes.put("/services/update/:id", upload.array("attachment"), services.update)
-routes.delete("/services/delete/:id", services.destroy)
+routes.put("/services/update/:id", isSignin, authorizeRoles("superadmin"), upload.array("attachment"), services.update)
+routes.delete("/services/delete/:id", isSignin, authorizeRoles("superadmin"), services.destroy)
 
 // Private routes || http://localhost:8000/api/v1/portfolio/create
-routes.post("/portfolio/create", upload.single("attachment"), portfolio.create)
-routes.get("/portfolio/show", portfolio.show)
+routes.post("/portfolio/create", isSignin, authorizeRoles("superadmin"), upload.single("attachment"), portfolio.create)
+routes.get("/portfolio/show", isSignin, authorizeRoles("superadmin"), portfolio.show)
 routes.get("/portfolio/show-data", portfolio.show_data)
-routes.get("/portfolio/indv/:id", portfolio.indvidual)
-routes.put("/portfolio/update/:id", upload.single("attachment"), portfolio.update)
-routes.delete("/portfolio/delete/:id", portfolio.destroy)
+routes.get("/portfolio/indv/:id", isSignin, authorizeRoles("superadmin"), portfolio.indvidual)
+routes.put("/portfolio/update/:id", isSignin, authorizeRoles("superadmin"), upload.single("attachment"), portfolio.update)
+routes.delete("/portfolio/delete/:id", isSignin, authorizeRoles("superadmin"), portfolio.destroy)
 
 // Private routes || http://localhost:8000/api/v1/teams/create
-routes.post("/teams/create", upload.single("attachment"), teams.create)
-routes.get("/teams/show", teams.show)
+routes.post("/teams/create", isSignin, authorizeRoles("superadmin"), upload.single("attachment"), teams.create)
+routes.get("/teams/show", isSignin, authorizeRoles("superadmin"), teams.show)
 routes.get("/teams/show-data", teams.show_data)
-routes.get("/teams/indv/:id", teams.indvidual)
-routes.put("/teams/update/:id", upload.single("attachment"), teams.update)
-routes.delete("/teams/delete/:id", teams.destroy)
+routes.get("/teams/indv/:id", isSignin, authorizeRoles("superadmin"), teams.indvidual)
+routes.put("/teams/update/:id", isSignin, authorizeRoles("superadmin"), upload.single("attachment"), teams.update)
+routes.delete("/teams/delete/:id", isSignin, authorizeRoles("superadmin"), teams.destroy)
 
 // Private routes || http://localhost:8000/api/v1/packages/create
-routes.post("/packages/create", packages.create)
-routes.get("/packages/show", packages.show)
-routes.get("/packages/indv/:id", packages.indvidual)
-routes.put("/packages/update/:id", packages.update)
-routes.delete("/packages/delete/:id", packages.destroy)
+routes.post("/packages/create", isSignin, authorizeRoles("superadmin"), packages.create)
+routes.get("/packages/show", isSignin, authorizeRoles("superadmin"), packages.show)
+routes.get("/packages/indv/:id", isSignin, authorizeRoles("superadmin"), packages.indvidual)
+routes.put("/packages/update/:id", isSignin, authorizeRoles("superadmin"), packages.update)
+routes.delete("/packages/delete/:id", isSignin, authorizeRoles("superadmin"), packages.destroy)
 
 // Private routes || http://localhost:8000/api/v1/reviews/create
 routes.post("/reviews/create", isSignin, authorizeRoles("superadmin", "anonymous"), reviews.create)
-routes.get("/reviews/show", reviews.show)
-routes.get("/reviews/indv/:id", reviews.indvidual)
+routes.get("/reviews/show", isSignin, authorizeRoles("superadmin"), reviews.show)
+routes.get("/reviews/indv/:id", isSignin, authorizeRoles("superadmin"), reviews.indvidual)
 routes.put("/reviews/update/:id", isSignin, authorizeRoles("superadmin", "anonymous"), reviews.update)
-routes.delete("/reviews/delete/:id", reviews.destroy)
+routes.delete("/reviews/delete/:id", isSignin, authorizeRoles("superadmin"), reviews.destroy)
 
 // Private routes || http://localhost:8000/api/v1/orders/create
-routes.post("/orders/create", orders.create)
-routes.get("/orders/show", orders.show)
-routes.get("/orders/indv/:id", orders.indvidual)
-routes.put("/orders/update/:id", orders.update)
-routes.delete("/orders/delete/:id", orders.destroy)
+routes.post("/orders/create", isSignin, authorizeRoles("superadmin", "anonymous"), orders.create)
+routes.get("/orders/show", isSignin, authorizeRoles("superadmin"), orders.show)
+routes.get("/orders/indv/:id", isSignin, authorizeRoles("superadmin"), orders.indvidual)
+routes.put("/orders/update/:id", isSignin, authorizeRoles("superadmin"), orders.update)
+routes.delete("/orders/delete/:id", isSignin, authorizeRoles("superadmin"), orders.destroy)
 
 // Private routes || http://localhost:8000/api/v1/appointments/create
 routes.post("/appointments/create", appointments.create)
-routes.get("/appointments/show", appointments.show)
-routes.get("/appointments/indv/:id", appointments.indvidual)
-routes.put("/appointments/update/:id", appointments.update)
-routes.delete("/appointments/delete/:id", appointments.destroy)
+routes.get("/appointments/show", isSignin, authorizeRoles("superadmin"), appointments.show)
+routes.get("/appointments/indv/:id", isSignin, authorizeRoles("superadmin"), appointments.indvidual)
+routes.put("/appointments/update/:id", isSignin, authorizeRoles("superadmin"), appointments.update)
+routes.delete("/appointments/delete/:id", isSignin, authorizeRoles("superadmin"), appointments.destroy)
 
 
 export default routes;
