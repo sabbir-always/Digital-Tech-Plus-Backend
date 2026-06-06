@@ -122,7 +122,7 @@ export const indvidual = async (req, res) => {
         const [result, reviews, packages] = await Promise.all([
             ServiceModel.findById(id).populate('categories_id', 'categories_name').lean(),
             ReviewsModel.find({ service_id: id }).lean(),
-            PackagesModel.find({ package_id: id }).lean(),
+            PackagesModel.find({ service_id: id }).lean(),
         ]);
 
         if (!result) {
