@@ -14,8 +14,8 @@ export const create = async (req, res) => {
         const result = await new CategoriesModel({ categories_name: categories_name }).save();
 
         if (result) {
-            const keys = cache.keys();
-            keys.forEach(key => { if (key.includes('categories')) { cache.del(key) } });
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('categories')) { cache.delete(key) } });
 
             return res.status(201).json({
                 success: true,
@@ -129,8 +129,8 @@ export const update = async (req, res) => {
         const result = await CategoriesModel.findByIdAndUpdate(id, { categories_name: categories_name }, { new: true })
 
         if (result) {
-            const keys = cache.keys();
-            keys.forEach(key => { if (key.includes('categories')) { cache.del(key) } });
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('categories')) { cache.delete(key) } });
 
             return res.status(200).json({
                 success: true,
@@ -164,8 +164,8 @@ export const destroy = async (req, res) => {
             return res.status(200).json({ success: false, message: "Data Not Found" });
 
         } else {
-            const keys = cache.keys();
-            keys.forEach(key => { if (key.includes('categories')) { cache.del(key) } });
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('categories')) { cache.delete(key) } });
 
             return res.status(200).json({
                 success: true,

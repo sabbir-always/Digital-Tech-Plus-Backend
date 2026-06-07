@@ -1,5 +1,5 @@
 import JWT from "jsonwebtoken"
-import NodeCache from "node-cache";
+import { LRUCache } from "lru-cache";
 
 export const createJSONWebToken = (payload, secretKey, expiresIn) => {
     if (typeof payload !== 'object' || !payload) {
@@ -61,7 +61,11 @@ export const createFormattedDate = (date) => {
     return date ? now.toLocaleString("en-GB", { timeZone: "Asia/Dhaka", day: "2-digit", month: "2-digit", year: "numeric" }) : null;
 };
 
-export const cache = new NodeCache({
-    stdTTL: 300, // cache data for 5 minutes
-    checkperiod: 60 // cache check every 60 seconds
+export const cache = new LRUCache({
+    max: 500,               // Cache এ সর্বোচ্চ ৫০০টি entry রাখা হবে
+    ttl: 1000 * 60 * 10,     // প্রতিটি cache entry 10 মিনিট পর্যন্ত বৈধ থাকবে
+    allowStale: false,      // মেয়াদোত্তীর্ণ (expired) data return করবে না
+    updateAgeOnGet: false,  // data read করলে cache এর মেয়াদ পুনরায় বৃদ্ধি পাবে না
+    updateAgeOnHas: false,  // has() check করলে cache এর মেয়াদ পুনরায় বৃদ্ধি পাবে না
+    ttlAutopurge: true,     // মেয়াদোত্তীর্ণ data স্বয়ংক্রিয়ভাবে cache থেকে মুছে ফেলবে
 });
