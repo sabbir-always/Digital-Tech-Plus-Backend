@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { v2 as cloudinary } from 'cloudinary';
 import { uploadCloudinary, uploadMultipleCloudinary } from "#/multer/upload.cloudinary.js";
 import { services_schema } from "#/validations/joi.schema.validation.js";
-import { createPagination } from "#/utils/common.utils.js";
+import { createPagination, cache } from "#/utils/common.utils.js";
 import ServiceModel from "#/models/services.model.js";
 import CategoriesModel from "#/models/categories.model.js";
 import ReviewsModel from "#/models/reviews.model.js";
@@ -58,6 +58,9 @@ export const create = async (req, res) => {
         }).save();
 
         if (result) {
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('services')) { cache.delete(key) } });
+
             await Promise.all([CategoriesModel.findByIdAndUpdate(categories_id, { $inc: { total_service: 1 } })]);
             return res.status(201).json({
                 success: true,
@@ -78,9 +81,13 @@ export const show = async (req, res) => {
         const search = req.query.search || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
-        const searchQuery = new RegExp('.*' + search + '.*', 'i');
+
+        const cache_key = `services:_search:${search}_limit:${limit}_page:${page}`
+        const cache_data = cache.get(cache_key);
+        if (cache_data) return res.status(200).json(cache_data);
 
         // === search filter ===
+        const searchQuery = new RegExp('.*' + search + '.*', 'i');
         const dataFilter = { $or: [{ service_name: { $regex: searchQuery } }] }
 
         const [services, count] = await Promise.all([
@@ -99,6 +106,13 @@ export const show = async (req, res) => {
         if (result.length === 0) {
             return res.status(200).json({ success: false, message: "No Data Found" });
         } else {
+            cache.set(cache_key, {
+                success: true,
+                message: 'Item Show Success (from cache)',
+                pagination: createPagination(page, limit, count),
+                payload: result
+            });
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Show Success',
@@ -118,9 +132,13 @@ export const show_data = async (req, res) => {
     try {
         const search = req.query.search || "";
         const limit = Number(req.query.limit);
-        const searchQuery = new RegExp('.*' + search + '.*', 'i');
+
+        const cache_key = `services:_search:${search}_limit:${limit}`
+        const cache_data = cache.get(cache_key);
+        if (cache_data) return res.status(200).json(cache_data);
 
         // === search filter ===
+        const searchQuery = new RegExp('.*' + search + '.*', 'i');
         const dataFilter = { status: "active", $or: [{ service_name: { $regex: searchQuery } }] }
 
         const services = await ServiceModel.find(dataFilter).populate('categories_id', 'categories_name').sort({ createdAt: -1 }).limit(limit).lean();
@@ -135,9 +153,15 @@ export const show_data = async (req, res) => {
         if (result.length === 0) {
             return res.status(200).json({ success: false, message: "No Data Found" });
         } else {
+            cache.set(cache_key, {
+                success: true,
+                message: 'Item Show Success (from cache)',
+                payload: result
+            });
+
             return res.status(200).json({
                 success: true,
-                message: 'All Items Show Success',
+                message: 'Items Show Success',
                 payload: result,
             });
         }
@@ -149,11 +173,14 @@ export const show_data = async (req, res) => {
     }
 }
 
-
 export const indvidual = async (req, res) => {
     try {
         const { id } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) { return res.status(400).json({ success: false, message: "Invalid ID Format" }) }
+
+        const cache_key = `services:_indvidual:${id}`
+        const cache_data = cache.get(cache_key);
+        if (cache_data) return res.status(200).json(cache_data);
 
         const [result, reviews, packages] = await Promise.all([
             ServiceModel.findById(id).populate('categories_id', 'categories_name').lean(),
@@ -164,6 +191,18 @@ export const indvidual = async (req, res) => {
         if (!result) {
             return res.status(200).json({ success: false, message: "No Data Found" });
         } else {
+            cache.set(cache_key, {
+                success: true,
+                message: 'Item Show Success (from cache)',
+                payload: {
+                    ...result,
+                    categories_id: result.categories_id._id,
+                    categories_name: result.categories_id.categories_name,
+                    reviews: reviews,
+                    packages: packages
+                }
+            });
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Show Success',
@@ -250,6 +289,9 @@ export const update = async (req, res) => {
         }, { new: true })
 
         if (result) {
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('services')) { cache.delete(key) } });
+
             if (isServices.categories_id.toString() !== categories_id) {
                 await Promise.all([
                     CategoriesModel.findByIdAndUpdate(categories_id, { $inc: { total_service: 1 } }),
@@ -284,6 +326,9 @@ export const destroy = async (req, res) => {
         if (!result) {
             return res.status(200).json({ success: false, message: "Data Not Found" });
         } else {
+
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('services')) { cache.delete(key) } });
 
             // if (isServices.attachment && isServices.attachment.public_id) {
             //     await cloudinary.uploader.destroy(isServices.attachment.public_id);

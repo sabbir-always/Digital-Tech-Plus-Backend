@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { appointment_schema } from "#/validations/joi.schema.validation.js";
-import { createPagination, createFormattedDate } from "#/utils/common.utils.js";
+import { createPagination, createFormattedDate, cache } from "#/utils/common.utils.js";
 import AppointmentModel from "#/models/appointment.model.js";
 
 export const create = async (req, res) => {
@@ -37,6 +37,9 @@ export const create = async (req, res) => {
         }).save();
 
         if (result) {
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('appointment')) { cache.delete(key) } });
+
             return res.status(201).json({
                 success: true,
                 message: 'Appointment Create Success',
@@ -56,9 +59,13 @@ export const show = async (req, res) => {
         const search = req.query.search || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
-        const searchQuery = new RegExp('.*' + search + '.*', 'i');
+
+        const cache_key = `appointment:_search:${search}_limit:${limit}_page:${page}`
+        const cache_data = cache.get(cache_key);
+        if (cache_data) return res.status(200).json(cache_data);
 
         // === search filter ===
+        const searchQuery = new RegExp('.*' + search + '.*', 'i');
         const dataFilter = { $or: [{ full_name: { $regex: searchQuery } }, { email: { $regex: searchQuery } }, { phone: { $regex: searchQuery } }] }
 
         const [result, count] = await Promise.all([
@@ -69,6 +76,13 @@ export const show = async (req, res) => {
         if (result.length === 0) {
             return res.status(200).json({ success: false, message: "No Data Found" });
         } else {
+            cache.set(cache_key, {
+                success: true,
+                message: 'Item Show Success (from cache)',
+                pagination: createPagination(page, limit, count),
+                payload: result
+            });
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Show Success',
@@ -88,11 +102,22 @@ export const indvidual = async (req, res) => {
     try {
         const { id } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) { return res.status(400).json({ success: false, message: "Invalid ID Format" }) }
+
+        const cache_key = `appointment:_indvidual:${id}`
+        const cache_data = cache.get(cache_key);
+        if (cache_data) return res.status(200).json(cache_data);
+
         const result = await AppointmentModel.findById(id).lean();
 
         if (!result) {
             return res.status(200).json({ success: false, message: "No Data Found" });
         } else {
+            cache.set(cache_key, {
+                success: true,
+                message: 'Item Show Success (from cache)',
+                payload: result
+            });
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Show Success',
@@ -148,6 +173,9 @@ export const update = async (req, res) => {
         }, { new: true })
 
         if (result) {
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('appointment')) { cache.delete(key) } });
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Update Success',
@@ -176,6 +204,9 @@ export const destroy = async (req, res) => {
         if (!result) {
             return res.status(200).json({ success: false, message: "Data Not Found" });
         } else {
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('appointment')) { cache.delete(key) } });
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Destroy Success',

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { v2 as cloudinary } from 'cloudinary';
 import { uploadCloudinary, uploadMultipleCloudinary } from "#/multer/upload.cloudinary.js";
 import { teams_schema } from "#/validations/joi.schema.validation.js";
-import { createFormattedDate, createPagination } from "#/utils/common.utils.js";
+import { createFormattedDate, createPagination, cache } from "#/utils/common.utils.js";
 import TeamsModel from "#/models/teams.model.js";
 
 export const create = async (req, res) => {
@@ -46,6 +46,9 @@ export const create = async (req, res) => {
         }).save();
 
         if (result) {
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('teams')) { cache.delete(key) } });
+
             return res.status(201).json({
                 success: true,
                 message: 'Item Create Success',
@@ -65,9 +68,13 @@ export const show = async (req, res) => {
         const search = req.query.search || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
-        const searchQuery = new RegExp('.*' + search + '.*', 'i');
+
+        const cache_key = `teams:_search:${search}_limit:${limit}_page:${page}`
+        const cache_data = cache.get(cache_key);
+        if (cache_data) return res.status(200).json(cache_data);
 
         // === search filter ===
+        const searchQuery = new RegExp('.*' + search + '.*', 'i');
         const dataFilter = { $or: [{ full_name: { $regex: searchQuery } }] }
 
         const [result, count] = await Promise.all([
@@ -78,6 +85,13 @@ export const show = async (req, res) => {
         if (result.length === 0) {
             return res.status(200).json({ success: false, message: "No Data Found" });
         } else {
+            cache.set(cache_key, {
+                success: true,
+                message: 'Item Show Success (from cache)',
+                pagination: createPagination(page, limit, count),
+                payload: result
+            });
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Show Success',
@@ -97,15 +111,25 @@ export const show_data = async (req, res) => {
     try {
         const search = req.query.search || "";
         const limit = Number(req.query.limit);
-        const searchQuery = new RegExp('.*' + search + '.*', 'i');
+
+        const cache_key = `teams:_search:${search}_limit:${limit}`
+        const cache_data = cache.get(cache_key);
+        if (cache_data) return res.status(200).json(cache_data);
 
         // === search filter ===
+        const searchQuery = new RegExp('.*' + search + '.*', 'i');
         const dataFilter = { status: "active", $or: [{ full_name: { $regex: searchQuery } }] }
         const result = await TeamsModel.find(dataFilter).sort({ createdAt: -1 }).limit(limit).lean()
 
         if (result.length === 0) {
             return res.status(200).json({ success: false, message: "No Data Found" });
         } else {
+            cache.set(cache_key, {
+                success: true,
+                message: 'Item Show Success (from cache)',
+                payload: result
+            });
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Show Success',
@@ -193,6 +217,9 @@ export const update = async (req, res) => {
         }, { new: true })
 
         if (result) {
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('teams')) { cache.delete(key) } });
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Update Success',
@@ -221,6 +248,9 @@ export const destroy = async (req, res) => {
         if (!result) {
             return res.status(200).json({ success: false, message: "Data Not Found" });
         } else {
+
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('teams')) { cache.delete(key) } });
 
             if (isTeams.attachment && isTeams.attachment.public_id) {
                 await cloudinary.uploader.destroy(isTeams.attachment.public_id);

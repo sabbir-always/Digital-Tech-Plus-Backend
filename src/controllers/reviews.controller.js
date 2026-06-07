@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { review_schema } from "#/validations/joi.schema.validation.js";
-import { createFormattedDate, createPagination } from "#/utils/common.utils.js";
+import { createFormattedDate, createPagination, cache } from "#/utils/common.utils.js";
 import ServiceModel from "#/models/services.model.js";
 import AuthenticationModel from "#/models/authentication.model.js";
 import ReviewsModel from "#/models/reviews.model.js";
@@ -32,6 +32,9 @@ export const create = async (req, res) => {
         }).save();
 
         if (result) {
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('reviews')) { cache.delete(key) } });
+
             return res.status(201).json({
                 success: true,
                 message: 'Item Create Success',
@@ -51,9 +54,14 @@ export const show = async (req, res) => {
         const search = req.query.search || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
-        const searchQuery = new RegExp('.*' + search + '.*', 'i');
         const { from_date = "", to_date = "", authentication = "", services = "" } = req.query;
+
+        const cache_key = `reviews:_search:${search}_limit:${limit}_page:${page}`
+        const cache_data = cache.get(cache_key);
+        if (cache_data) return res.status(200).json(cache_data);
+
         // === search filter ===
+        const searchQuery = new RegExp('.*' + search + '.*', 'i');
         const dataFilter = {}
 
         if (from_date || to_date) {
@@ -111,6 +119,13 @@ export const show = async (req, res) => {
         if (result.length === 0) {
             return res.status(200).json({ success: false, message: "No Data Found" });
         } else {
+            cache.set(cache_key, {
+                success: true,
+                message: 'Item Show Success (from cache)',
+                pagination: createPagination(page, limit, count),
+                payload: result
+            });
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Show Success',
@@ -130,6 +145,11 @@ export const indvidual = async (req, res) => {
     try {
         const { id } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) { return res.status(400).json({ success: false, message: "Invalid ID Format" }) }
+
+        const cache_key = `reviews:_indvidual:${id}`
+        const cache_data = cache.get(cache_key);
+        if (cache_data) return res.status(200).json(cache_data);
+
         const result = await ReviewsModel.findById(id)
             .populate('authentication_id', 'full_name email phone role status')
             .populate('service_id', 'service_name').lean();
@@ -137,6 +157,24 @@ export const indvidual = async (req, res) => {
         if (!result) {
             return res.status(200).json({ success: false, message: "No Data Found" });
         } else {
+            cache.set(cache_key, {
+                success: true,
+                message: 'Item Show Success (from cache)',
+                payload: {
+                    ...result,
+                    authentication_id: result.authentication_id._id,
+                    authentication: {
+                        name: result.authentication_id.full_name,
+                        email: result.authentication_id.email,
+                        phone: result.authentication_id.phone,
+                        role: result.authentication_id.role,
+                        status: result.authentication_id.status
+                    },
+                    service_id: result.service_id._id,
+                    service_name: result.service_id.service_name
+                }
+            });
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Show Success',
@@ -198,6 +236,9 @@ export const update = async (req, res) => {
         }, { new: true })
 
         if (result) {
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('reviews')) { cache.delete(key) } });
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Update Success',
@@ -217,13 +258,18 @@ export const destroy = async (req, res) => {
 
         const { id } = req.params
         if (!mongoose.Types.ObjectId.isValid(id)) { return res.status(400).json({ success: false, message: "Invalid ID Format" }) }
+
         const isReviews = await ReviewsModel.findById(id).lean();
         if (!isReviews) { return res.status(404).json({ success: false, message: "Item Not Found" }) }
+
         const result = await ReviewsModel.findByIdAndDelete(id);
 
         if (!result) {
             return res.status(200).json({ success: false, message: "Data Not Found" });
         } else {
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('reviews')) { cache.delete(key) } });
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Destroy Success',

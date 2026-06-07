@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs"
 import dotenv from 'dotenv';
 dotenv.config();
-import { createJSONWebToken, createPagination, createFormattedDate } from "#/utils/common.utils.js";
+import { createJSONWebToken, createPagination, createFormattedDate, cache } from "#/utils/common.utils.js";
 import { auth_change_password_schema, auth_create_schema, auth_signin_schema, auth_update_schema } from "#/validations/joi.schema.validation.js";
 import AuthenticationModel from "#/models/authentication.model.js";
 
@@ -13,15 +13,15 @@ export const create = async (req, res) => {
         if (error) { return res.status(400).json({ success: false, message: error.details[0].message }) }
 
         const [isExistedPhone, isExistedEmail, isSuperAdmin] = await Promise.all([
-            AuthenticationSchema.exists({ phone: { $regex: new RegExp(`^${phone.trim()}$`, 'i') } }),
-            AuthenticationSchema.exists({ email: { $regex: new RegExp(`^${email.trim()}$`, 'i') } }),
-            AuthenticationSchema.exists({ role: "superadmin" })
+            AuthenticationModel.exists({ phone: { $regex: new RegExp(`^${phone.trim()}$`, 'i') } }),
+            AuthenticationModel.exists({ email: { $regex: new RegExp(`^${email.trim()}$`, 'i') } }),
+            AuthenticationModel.exists({ role: "superadmin" })
         ])
 
         if (isExistedPhone) { return res.status(409).json({ success: false, message: "Phone already exists. try another." }) };
         if (isExistedEmail) { return res.status(409).json({ success: false, message: "Email already exists. try another." }) };
 
-        const result = await new AuthenticationSchema({
+        const result = await new AuthenticationModel({
             date_and_time_format: createFormattedDate(Date.now()),
             first_name: first_name,
             last_name: last_name,
@@ -34,6 +34,9 @@ export const create = async (req, res) => {
         }).save();
 
         if (result) {
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('authentication')) { cache.delete(key) } });
+
             return res.status(201).json({
                 success: true,
                 message: !isSuperAdmin ? "Superadmin Create Success" : "Register Success",
@@ -55,6 +58,10 @@ export const show = async (req, res) => {
         const limit = Number(req.query.limit) || 10;
         const { from_date = "", to_date = "", status = "" } = req.query;
 
+        const cache_key = `authentication:_search:${search}_limit:${limit}_page:${page}`
+        const cache_data = cache.get(cache_key);
+        if (cache_data) return res.status(200).json(cache_data);
+
         // Add search filter
         const searchQuery = new RegExp('.*' + search + '.*', 'i');
         const dataFilter = { $or: [{ full_name: { $regex: searchQuery } }, { email: { $regex: searchQuery } }, { phone: { $regex: searchQuery } }], role: { $ne: "superadmin" } }
@@ -68,8 +75,8 @@ export const show = async (req, res) => {
         }
 
         const [result, count] = await Promise.all([
-            AuthenticationSchema.find(dataFilter).select("-password").sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
-            AuthenticationSchema.countDocuments(dataFilter)
+            AuthenticationModel.find(dataFilter).select("-password").sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
+            AuthenticationModel.countDocuments(dataFilter)
         ]);
 
         // Check not found
@@ -77,9 +84,16 @@ export const show = async (req, res) => {
             return res.status(200).json({ success: false, message: "No Data Found" });
 
         } else {
+            cache.set(cache_key, {
+                success: true,
+                message: 'Item Show Success (from cache)',
+                pagination: createPagination(page, limit, count),
+                payload: result
+            });
+
             return res.status(200).json({
                 success: true,
-                message: 'Show Success',
+                message: 'Item Show Success',
                 pagination: createPagination(page, limit, count),
                 payload: result,
             });
@@ -96,12 +110,23 @@ export const single = async (req, res) => {
     try {
         const { id } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) { return res.status(400).json({ success: false, message: "Invalid ID Format" }) }
-        const result = await AuthenticationSchema.findById(id).select("-password").lean();
+
+        const cache_key = `authentication:_indvidual:${id}`
+        const cache_data = cache.get(cache_key);
+        if (cache_data) return res.status(200).json(cache_data);
+
+        const result = await AuthenticationModel.findById(id).select("-password").lean();
 
         if (!result) {
             return res.status(200).json({ success: false, message: "No Data Found" });
 
         } else {
+            cache.set(cache_key, {
+                success: true,
+                message: 'Item Show Success (from cache)',
+                payload: result
+            });
+
             return res.status(200).json({
                 success: true,
                 message: 'Show Success',
@@ -128,16 +153,16 @@ export const update = async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(id)) { return res.status(400).json({ success: false, message: "Invalid ID Format" }) }
 
         const [isUsers, isExistedPhone, isExistedEmail] = await Promise.all([
-            AuthenticationSchema.findById(id).lean(),
-            AuthenticationSchema.exists({ phone: { $regex: new RegExp(`^${phone.trim()}$`, "i") }, _id: { $ne: id } }),
-            AuthenticationSchema.exists({ email: { $regex: new RegExp(`^${email.trim()}$`, "i") }, _id: { $ne: id } })
+            AuthenticationModel.findById(id).lean(),
+            AuthenticationModel.exists({ phone: { $regex: new RegExp(`^${phone.trim()}$`, "i") }, _id: { $ne: id } }),
+            AuthenticationModel.exists({ email: { $regex: new RegExp(`^${email.trim()}$`, "i") }, _id: { $ne: id } })
         ]);
 
         if (!isUsers) { return res.status(404).json({ success: false, message: "Not Found By ID" }) }
         if (isExistedPhone) { return res.status(400).json({ success: false, message: "Phone already exists. Try another." }) }
         if (isExistedEmail) { return res.status(400).json({ success: false, message: "Email already exists. Try another." }) }
 
-        const result = await AuthenticationSchema.findByIdAndUpdate(id, {
+        const result = await AuthenticationModel.findByIdAndUpdate(id, {
             first_name: first_name,
             last_name: last_name,
             full_name: first_name + ' ' + last_name,
@@ -148,6 +173,9 @@ export const update = async (req, res) => {
         }, { new: true })
 
         if (result) {
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('authentication') || key.includes('signin')) { cache.delete(key) } });
+
             return res.status(200).json({
                 success: true,
                 message: 'Update Success',
@@ -168,16 +196,19 @@ export const destroy = async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(id)) { return res.status(400).json({ success: false, message: "Invalid ID Format" }) }
 
         // === find items ===
-        const isUsers = await AuthenticationSchema.findById(id).lean();
+        const isUsers = await AuthenticationModel.findById(id).lean();
         if (!isUsers) { return res.status(404).json({ success: false, message: "Item Not Found" }) }
 
         if (isUsers.role === "superadmin") { return res.status(403).json({ success: false, message: "Cannot delete superadmin account. This is protected." }) }
         if (isUsers.status === "active") { return res.status(403).json({ success: false, message: "Cannot delete active admin. Please deactivate first." }) }
-        const result = await AuthenticationSchema.findByIdAndDelete(id);
+        const result = await AuthenticationModel.findByIdAndDelete(id);
 
         if (!result) {
             return res.status(200).json({ success: false, message: "Data Not Found" });
         } else {
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('authentication') || key.includes('signin')) { cache.delete(key) } });
+
             return res.status(200).json({
                 success: true,
                 message: 'Supperadmin Destroy Success',
@@ -236,15 +267,18 @@ export const change_password = async (req, res) => {
 
         // === Check if user exists ===
         if (!mongoose.Types.ObjectId.isValid(id)) { return res.status(400).json({ success: false, message: "Invalid ID Format" }) }
-        const isUsers = await AuthenticationSchema.findById(id).lean();
+        const isUsers = await AuthenticationModel.findById(id).lean();
         if (!isUsers) return res.status(404).json({ success: false, message: "User not found" });
 
         // === Verify old password ===
         const isPasswordMatch = await bcrypt.compare(old_password, isUsers.password);
         if (!isPasswordMatch) return res.status(401).json({ success: false, message: "Old password is incorrect" });
-        const result = await AuthenticationSchema.findByIdAndUpdate(id, { password: new_password }, { new: true })
+        const result = await AuthenticationModel.findByIdAndUpdate(id, { password: new_password }, { new: true })
 
         if (result) {
+            const keys = [...cache.keys()];
+            keys.forEach(key => { if (key.includes('authentication') || key.includes('signin')) { cache.delete(key) } });
+
             return res.status(200).json({
                 success: true,
                 message: 'Password Change Success',

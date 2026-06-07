@@ -36,13 +36,13 @@ export const show = async (req, res) => {
         const search = req.query.search || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
-        const searchQuery = new RegExp('.*' + search + '.*', 'i');
-
+        
         const cache_key = `categories:_search:${search}_limit:${limit}_page:${page}`
         const cache_data = cache.get(cache_key);
         if (cache_data) return res.status(200).json(cache_data);
-
+        
         // === search filter ===
+        const searchQuery = new RegExp('.*' + search + '.*', 'i');
         const dataFilter = { $or: [{ categories_name: { $regex: searchQuery } }] }
         const [result, count] = await Promise.all([
             CategoriesModel.find(dataFilter).sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
@@ -83,6 +83,7 @@ export const indvidual = async (req, res) => {
         const cache_key = `categories:_indvidual:${id}`
         const cache_data = cache.get(cache_key);
         if (cache_data) return res.status(200).json(cache_data);
+        
         const result = await CategoriesModel.findById(id).lean();
 
         if (!result) {
