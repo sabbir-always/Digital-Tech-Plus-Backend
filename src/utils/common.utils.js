@@ -1,4 +1,5 @@
 import JWT from "jsonwebtoken"
+import NodeCache from "node-cache";
 
 export const createJSONWebToken = (payload, secretKey, expiresIn) => {
     if (typeof payload !== 'object' || !payload) {
@@ -59,3 +60,8 @@ export const createFormattedDate = (date) => {
     const now = date ? new Date(date) : new Date();
     return date ? now.toLocaleString("en-GB", { timeZone: "Asia/Dhaka", day: "2-digit", month: "2-digit", year: "numeric" }) : null;
 };
+
+export const cache = new NodeCache({
+    stdTTL: 300, // cache data for 5 minutes
+    checkperiod: 60 // cache check every 60 seconds
+});

@@ -23,7 +23,7 @@ routes.put("/authentication/change-password", isSignin, authorizeRoles("superadm
 
 // Private routes || http://localhost:8000/api/v1/categories/create
 routes.post("/categories/create", isSignin, authorizeRoles("superadmin"), categories.create)
-routes.get("/categories/show", isSignin, authorizeRoles("superadmin"), categories.show)
+routes.get("/categories/show", categories.show)
 routes.get("/categories/indv/:id", isSignin, authorizeRoles("superadmin"), categories.indvidual)
 routes.put("/categories/update/:id", isSignin, authorizeRoles("superadmin"), categories.update)
 routes.delete("/categories/delete/:id", isSignin, authorizeRoles("superadmin"), categories.destroy)

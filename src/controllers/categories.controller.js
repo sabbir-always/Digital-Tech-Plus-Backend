@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { categories_schema } from "#/validations/joi.schema.validation.js";
-import { createPagination } from "#/utils/common.utils.js";
+import { createPagination, cache } from "#/utils/common.utils.js";
 import CategoriesModel from "#/models/categories.model.js";
 
 export const create = async (req, res) => {
@@ -14,6 +14,9 @@ export const create = async (req, res) => {
         const result = await new CategoriesModel({ categories_name: categories_name }).save();
 
         if (result) {
+            const keys = cache.keys();
+            keys.forEach(key => { if (key.includes('categories')) { cache.del(key) } });
+
             return res.status(201).json({
                 success: true,
                 message: 'Item Create Success',
@@ -35,6 +38,10 @@ export const show = async (req, res) => {
         const limit = Number(req.query.limit) || 10;
         const searchQuery = new RegExp('.*' + search + '.*', 'i');
 
+        const cache_key = `categories:_search:${search}_limit:${limit}_page:${page}`
+        const cache_data = cache.get(cache_key);
+        if (cache_data) return res.status(200).json(cache_data);
+
         // === search filter ===
         const dataFilter = { $or: [{ categories_name: { $regex: searchQuery } }] }
         const [result, count] = await Promise.all([
@@ -46,11 +53,18 @@ export const show = async (req, res) => {
             return res.status(200).json({ success: false, message: "No Data Found" });
 
         } else {
+            cache.set(cache_key, {
+                success: true,
+                message: 'Item Show Success (from cache)',
+                pagination: createPagination(page, limit, count),
+                payload: result
+            });
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Show Success',
                 pagination: createPagination(page, limit, count),
-                payload: result,
+                payload: result
             });
         }
     } catch (error) {
@@ -65,11 +79,22 @@ export const indvidual = async (req, res) => {
     try {
         const { id } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) { return res.status(400).json({ success: false, message: "Invalid ID Format" }) }
+
+        const cache_key = `categories:_indvidual:${id}`
+        const cache_data = cache.get(cache_key);
+        if (cache_data) return res.status(200).json(cache_data);
         const result = await CategoriesModel.findById(id).lean();
 
         if (!result) {
             return res.status(200).json({ success: false, message: "No Data Found" });
         } else {
+
+            cache.set(cache_key, {
+                success: true,
+                message: 'Item Show Success (from cache)',
+                payload: result
+            });
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Show Success',
@@ -104,6 +129,9 @@ export const update = async (req, res) => {
         const result = await CategoriesModel.findByIdAndUpdate(id, { categories_name: categories_name }, { new: true })
 
         if (result) {
+            const keys = cache.keys();
+            keys.forEach(key => { if (key.includes('categories')) { cache.del(key) } });
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Update Success',
@@ -136,6 +164,9 @@ export const destroy = async (req, res) => {
             return res.status(200).json({ success: false, message: "Data Not Found" });
 
         } else {
+            const keys = cache.keys();
+            keys.forEach(key => { if (key.includes('categories')) { cache.del(key) } });
+
             return res.status(200).json({
                 success: true,
                 message: 'Item Destroy Success',
