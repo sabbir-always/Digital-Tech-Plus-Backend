@@ -67,7 +67,7 @@ export const show = async (req, res) => {
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
 
-        const cache_key = `portfolio:_search:${search}_limit:${limit}`
+        const cache_key = `portfolio:_search:${search}_limit:${limit}_page:${page}`
         const cache_data = cache.get(cache_key);
         if (cache_data) return res.status(200).json(cache_data);
 
@@ -118,7 +118,7 @@ export const show_data = async (req, res) => {
         const search = req.query.search || "";
         const limit = Number(req.query.limit);
 
-        const cache_key = `portfolio:_search:${search}_limit:${limit}_page:${page}`
+        const cache_key = `portfolio:_search:${search}_limit:${limit}`
         const cache_data = cache.get(cache_key);
         if (cache_data) return res.status(200).json(cache_data);
 
