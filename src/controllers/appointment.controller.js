@@ -209,7 +209,8 @@ export const destroy = async (req, res) => {
 
             return res.status(200).json({
                 success: true,
-                message: 'Item Destroy Success',
+                message: 'Item Destroy Success'
+
             });
         }
 
