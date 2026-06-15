@@ -66,8 +66,8 @@ export const show = async (req, res) => {
         const result = packages.map((pack) => {
             return {
                 ...pack,
-                service_id: pack.service_id?._id,
-                service_name: pack.service_id?.service_name
+                service_id: pack.service_id._id,
+                service_name: pack.service_id.service_name
             }
         })
 
