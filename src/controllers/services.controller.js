@@ -91,7 +91,7 @@ export const show = async (req, res) => {
         const dataFilter = { $or: [{ service_name: { $regex: searchQuery } }] }
 
         const [services, count] = await Promise.all([
-            ServiceModel.find(dataFilter).populate('categories_id', 'categories_name').sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
+            ServiceModel.find(dataFilter).populate('categories_id', 'categories_name').limit(limit).skip((page - 1) * limit).lean(),
             ServiceModel.countDocuments(dataFilter)
         ]);
 
