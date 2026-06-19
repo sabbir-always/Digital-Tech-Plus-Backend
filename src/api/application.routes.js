@@ -1,5 +1,6 @@
 import express from "express";
 import * as authentication from "#/controllers/authentication.controller.js";
+import * as appointments from "#/controllers/appointment.controller.js";
 import * as categories from "#/controllers/categories.controller.js";
 import * as services from "#/controllers/services.controller.js";
 import * as portfolio from "#/controllers/portfolio.controller.js";
@@ -7,7 +8,7 @@ import * as teams from "#/controllers/teams.controller.js";
 import * as packages from "#/controllers/packages.controller.js";
 import * as reviews from "#/controllers/reviews.controller.js";
 import * as orders from "#/controllers/orders.controller.js";
-import * as appointments from "#/controllers/appointment.controller.js";
+import * as dashboard from "#/controllers/dashboard.controller.js";
 import { isSignin, authorizeRoles } from "#/middlewares/auth.middleware.js";
 import upload from "#/multer/upload.multer.js";
 const routes = express.Router();
@@ -79,6 +80,7 @@ routes.get("/appointments/show", isSignin, authorizeRoles("superadmin"), appoint
 routes.get("/appointments/indv/:id", isSignin, authorizeRoles("superadmin"), appointments.indvidual)
 routes.put("/appointments/update/:id", isSignin, authorizeRoles("superadmin"), appointments.update)
 routes.delete("/appointments/delete/:id", isSignin, authorizeRoles("superadmin"), appointments.destroy)
+routes.get("/dashboard/show", isSignin, authorizeRoles("superadmin"), dashboard.show)
 
 
 export default routes;

@@ -63,7 +63,7 @@ export const createFormattedDate = (date) => {
 
 export const cache = new LRUCache({
     max: 500,               // Cache এ সর্বোচ্চ ৫০০টি entry রাখা হবে
-    ttl: 1000 * 60 * 30,     // প্রতিটি cache entry 10 মিনিট পর্যন্ত বৈধ থাকবে
+    ttl: 1000 * 60 * 30,     // প্রতিটি cache entry 30 মিনিট পর্যন্ত বৈধ থাকবে
     allowStale: false,      // মেয়াদোত্তীর্ণ (expired) data return করবে না
     updateAgeOnGet: false,  // data read করলে cache এর মেয়াদ পুনরায় বৃদ্ধি পাবে না
     updateAgeOnHas: false,  // has() check করলে cache এর মেয়াদ পুনরায় বৃদ্ধি পাবে না
