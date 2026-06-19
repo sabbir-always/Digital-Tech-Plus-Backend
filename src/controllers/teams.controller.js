@@ -177,6 +177,7 @@ export const update = async (req, res) => {
         // === Basic field validation ===
         const { error } = teams_schema.validate(req.body, { errors: { wrap: { label: "" } } });
         if (error) { return res.status(400).json({ success: false, message: error.details[0].message }) }
+        if (!mongoose.Types.ObjectId.isValid(id)) { return res.status(400).json({ success: false, message: "Invalid ID Format" }) }
 
         const [isTeams, isExistPhone, isExistEmail] = await Promise.all([
             TeamsModel.findById(id).lean(),
