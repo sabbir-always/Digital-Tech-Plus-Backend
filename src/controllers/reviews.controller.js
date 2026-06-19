@@ -54,6 +54,7 @@ export const show = async (req, res) => {
         const search = req.query.search || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
         const { from_date = "", to_date = "", authentication = "", services = "" } = req.query;
 
         const cache_key = `reviews:_search:${search}_from_date:${from_date}_to_date:${to_date}_authentication:${authentication}_services:${services}_limit:${limit}_page:${page}`
@@ -96,7 +97,7 @@ export const show = async (req, res) => {
             ReviewsModel.find(dataFilter)
                 .populate('authentication_id', 'full_name email phone role status')
                 .populate('service_id', 'service_name')
-                .sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
+                .sort({ createdAt: -1 }).limit(limit).skip(offset).lean(),
             ReviewsModel.countDocuments(dataFilter)
         ]);
 

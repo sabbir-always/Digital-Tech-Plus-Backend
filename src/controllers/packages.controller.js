@@ -49,6 +49,7 @@ export const show = async (req, res) => {
         const search = req.query.search || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
         const { services = "" } = req.query;
 
         const cache_key = `packages:_search:${search}_services:${services}_limit:${limit}_page:${page}`
@@ -71,7 +72,7 @@ export const show = async (req, res) => {
         }
 
         const [packages, count] = await Promise.all([
-            PackagesModel.find(dataFilter).populate('service_id', 'service_name').sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
+            PackagesModel.find(dataFilter).populate('service_id', 'service_name').sort({ createdAt: -1 }).limit(limit).skip(offset).lean(),
             PackagesModel.countDocuments(dataFilter)
         ]);
 

@@ -56,6 +56,7 @@ export const show = async (req, res) => {
         const search = req.query.search || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
         const { from_date = "", to_date = "", status = "" } = req.query;
 
         const cache_key = `authentication:_search:${search}_from_date:${from_date}_to_date:${to_date}_status:${status}_limit:${limit}_page:${page}`
@@ -78,7 +79,7 @@ export const show = async (req, res) => {
         }
 
         const [result, count] = await Promise.all([
-            AuthenticationModel.find(dataFilter).select("-password").sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
+            AuthenticationModel.find(dataFilter).select("-password").sort({ createdAt: -1 }).limit(limit).skip(offset).lean(),
             AuthenticationModel.countDocuments(dataFilter)
         ]);
 

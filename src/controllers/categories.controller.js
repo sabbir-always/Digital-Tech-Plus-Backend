@@ -36,6 +36,7 @@ export const show = async (req, res) => {
         const search = req.query.search || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
         
         const cache_key = `categories:_search:${search}_limit:${limit}_page:${page}`
         const cache_data = cache.get(cache_key);
@@ -45,7 +46,7 @@ export const show = async (req, res) => {
         const searchQuery = new RegExp('.*' + search + '.*', 'i');
         const dataFilter = { $or: [{ categories_name: { $regex: searchQuery } }] }
         const [result, count] = await Promise.all([
-            CategoriesModel.find(dataFilter).sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
+            CategoriesModel.find(dataFilter).sort({ createdAt: -1 }).limit(limit).skip(offset).lean(),
             CategoriesModel.countDocuments(dataFilter)
         ]);
 

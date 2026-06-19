@@ -60,6 +60,7 @@ export const show = async (req, res) => {
         const search = req.query.search || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
         const { from_date = "", to_date = "", authentication = "", services = "", packages = "" } = req.query;
 
         const cache_key = `orders:_search:${search}_from_date:${from_date}_to_date:${to_date}_authentication:${authentication}_services:${services}_packages:${packages}_limit:${limit}_page:${page}`
@@ -114,7 +115,7 @@ export const show = async (req, res) => {
                 .populate('authentication_id', 'full_name email phone role status')
                 .populate('service_id', 'service_name')
                 .populate('package_id', 'package_name')
-                .sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
+                .sort({ createdAt: -1 }).limit(limit).skip(offset).lean(),
             OrdersModel.countDocuments(dataFilter)
         ]);
 

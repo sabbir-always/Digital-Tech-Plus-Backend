@@ -66,6 +66,7 @@ export const show = async (req, res) => {
         const search = req.query.search || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
         const { categories = "" } = req.query;
 
         const cache_key = `portfolio:_search:${search}_categories:${categories}_limit:${limit}_page:${page}`
@@ -88,7 +89,7 @@ export const show = async (req, res) => {
         }
 
         const [portfolio, count] = await Promise.all([
-            PortfolioModel.find(dataFilter).populate('categories_id', 'categories_name').sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
+            PortfolioModel.find(dataFilter).populate('categories_id', 'categories_name').sort({ createdAt: -1 }).limit(limit).skip(offset).lean(),
             PortfolioModel.countDocuments(dataFilter)
         ]);
 

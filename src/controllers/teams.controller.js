@@ -68,6 +68,7 @@ export const show = async (req, res) => {
         const search = req.query.search || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
 
         const cache_key = `teams:_search:${search}_limit:${limit}_page:${page}`
         const cache_data = cache.get(cache_key);
@@ -78,7 +79,7 @@ export const show = async (req, res) => {
         const dataFilter = { $or: [{ full_name: { $regex: searchQuery } }] }
 
         const [result, count] = await Promise.all([
-            TeamsModel.find(dataFilter).sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
+            TeamsModel.find(dataFilter).sort({ createdAt: -1 }).limit(limit).skip(offset).lean(),
             TeamsModel.countDocuments(dataFilter)
         ]);
 
