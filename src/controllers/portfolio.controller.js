@@ -66,14 +66,26 @@ export const show = async (req, res) => {
         const search = req.query.search || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
+        const { categories = "" } = req.query;
 
-        const cache_key = `portfolio:_search:${search}_limit:${limit}_page:${page}`
+        const cache_key = `portfolio:_search:${search}_categories:${categories}_limit:${limit}_page:${page}`
         const cache_data = cache.get(cache_key);
         if (cache_data) return res.status(200).json(cache_data);
 
         // === search filter ===
         const searchQuery = new RegExp('.*' + search + '.*', 'i');
         const dataFilter = { $or: [{ portfolio_name: { $regex: searchQuery } }] }
+
+        // === filter by categories ===
+        if (categories && categories !== 'undefined' && categories !== "null" && categories !== "") {
+            if (mongoose.Types.ObjectId.isValid(categories)) {
+                dataFilter.categories_id = categories;
+            } else {
+                return res.status(400).json({
+                    success: false, message: 'Invalid categories ID format'
+                });
+            }
+        }
 
         const [portfolio, count] = await Promise.all([
             PortfolioModel.find(dataFilter).populate('categories_id', 'categories_name').sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),

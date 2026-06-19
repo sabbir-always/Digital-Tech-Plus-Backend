@@ -49,14 +49,26 @@ export const show = async (req, res) => {
         const search = req.query.search || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
+        const { services = "" } = req.query;
 
-        const cache_key = `packages:_search:${search}_limit:${limit}_page:${page}`
+        const cache_key = `packages:_search:${search}_services:${services}_limit:${limit}_page:${page}`
         const cache_data = cache.get(cache_key);
         if (cache_data) return res.status(200).json(cache_data);
 
         // === search filter ===
         const searchQuery = new RegExp('.*' + search + '.*', 'i');
         const dataFilter = { $or: [{ package_name: { $regex: searchQuery } }] }
+
+        // === filter by services ===
+        if (services && services !== 'undefined' && services !== "null" && services !== "") {
+            if (mongoose.Types.ObjectId.isValid(services)) {
+                dataFilter.service_id = services;
+            } else {
+                return res.status(400).json({
+                    success: false, message: 'Invalid services ID format'
+                });
+            }
+        }
 
         const [packages, count] = await Promise.all([
             PackagesModel.find(dataFilter).populate('service_id', 'service_name').sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),

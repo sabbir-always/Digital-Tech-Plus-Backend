@@ -56,7 +56,7 @@ export const show = async (req, res) => {
         const limit = Number(req.query.limit) || 10;
         const { from_date = "", to_date = "", authentication = "", services = "" } = req.query;
 
-        const cache_key = `reviews:_search:${search}_limit:${limit}_page:${page}`
+        const cache_key = `reviews:_search:${search}_from_date:${from_date}_to_date:${to_date}_authentication:${authentication}_services:${services}_limit:${limit}_page:${page}`
         const cache_data = cache.get(cache_key);
         if (cache_data) return res.status(200).json(cache_data);
 

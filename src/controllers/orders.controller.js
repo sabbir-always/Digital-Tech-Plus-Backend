@@ -62,7 +62,7 @@ export const show = async (req, res) => {
         const limit = Number(req.query.limit) || 10;
         const { from_date = "", to_date = "", authentication = "", services = "", packages = "" } = req.query;
 
-        const cache_key = `orders:_search:${search}_limit:${limit}_page:${page}`
+        const cache_key = `orders:_search:${search}_from_date:${from_date}_to_date:${to_date}_authentication:${authentication}_services:${services}_packages:${packages}_limit:${limit}_page:${page}`
         const cache_data = cache.get(cache_key);
         if (cache_data) return res.status(200).json(cache_data);
 
@@ -98,7 +98,7 @@ export const show = async (req, res) => {
             }
         }
 
-        // === filter by services ===
+        // === filter by packages ===
         if (packages && packages !== 'undefined' && packages !== "null" && packages !== "") {
             if (mongoose.Types.ObjectId.isValid(packages)) {
                 dataFilter.package_id = packages;

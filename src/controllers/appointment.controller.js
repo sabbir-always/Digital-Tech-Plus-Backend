@@ -59,14 +59,25 @@ export const show = async (req, res) => {
         const search = req.query.search || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
+        const { from_date = "", to_date = "" } = req.query;
 
-        const cache_key = `appointment:_search:${search}_limit:${limit}_page:${page}`
+        const cache_key = `appointment:_search:${search}_from_date:${from_date}_to_date:${to_date}_limit:${limit}_page:${page}`;
         const cache_data = cache.get(cache_key);
         if (cache_data) return res.status(200).json(cache_data);
 
         // === search filter ===
         const searchQuery = new RegExp('.*' + search + '.*', 'i');
         const dataFilter = { $or: [{ full_name: { $regex: searchQuery } }, { email: { $regex: searchQuery } }, { phone: { $regex: searchQuery } }] }
+
+        // Date and time filter
+        if (from_date || to_date) {
+            dataFilter.date_and_time = {};
+            if (from_date) { dataFilter.date_and_time.$gte = new Date(from_date) }
+
+            const endDate = to_date ? new Date(new Date(to_date).setHours(23, 59, 59, 999)) : null;
+            if (endDate) { dataFilter.date_and_time.$lte = endDate }
+
+        }
 
         const [result, count] = await Promise.all([
             AppointmentModel.find(dataFilter).sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),

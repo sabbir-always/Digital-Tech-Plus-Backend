@@ -58,7 +58,7 @@ export const show = async (req, res) => {
         const limit = Number(req.query.limit) || 10;
         const { from_date = "", to_date = "", status = "" } = req.query;
 
-        const cache_key = `authentication:_search:${search}_limit:${limit}_page:${page}`
+        const cache_key = `authentication:_search:${search}_from_date:${from_date}_to_date:${to_date}_status:${status}_limit:${limit}_page:${page}`
         const cache_data = cache.get(cache_key);
         if (cache_data) return res.status(200).json(cache_data);
 
@@ -71,7 +71,10 @@ export const show = async (req, res) => {
         if (from_date || to_date) {
             dataFilter.date_and_time = {};
             if (from_date) { dataFilter.date_and_time.$gte = new Date(from_date) }
-            if (to_date) { dataFilter.date_and_time.$lte = new Date(to_date) }
+
+            const endDate = to_date ? new Date(new Date(to_date).setHours(23, 59, 59, 999)) : null;
+            if (endDate) { dataFilter.date_and_time.$lte = endDate }
+
         }
 
         const [result, count] = await Promise.all([
