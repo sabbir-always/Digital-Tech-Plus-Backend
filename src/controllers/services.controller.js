@@ -91,7 +91,7 @@ export const show = async (req, res) => {
         const dataFilter = { $or: [{ service_name: { $regex: searchQuery } }] }
 
         const [services, count] = await Promise.all([
-            ServiceModel.find(dataFilter).populate('categories_id', 'categories_name').limit(limit).skip((page - 1) * limit).lean(),
+            ServiceModel.find(dataFilter).populate('categories_id', 'categories_name').sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit).lean(),
             ServiceModel.countDocuments(dataFilter)
         ]);
 
@@ -141,7 +141,7 @@ export const show_data = async (req, res) => {
         const searchQuery = new RegExp('.*' + search + '.*', 'i');
         const dataFilter = { status: "active", $or: [{ service_name: { $regex: searchQuery } }] }
 
-        const services = await ServiceModel.find(dataFilter).populate('categories_id', 'categories_name').sort({ createdAt: -1 }).limit(limit).lean();
+        const services = await ServiceModel.find(dataFilter).populate('categories_id', 'categories_name').limit(limit).lean();
         const result = services.map((service) => {
             return {
                 ...service,
