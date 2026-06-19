@@ -1,3 +1,4 @@
+import AppointmentModel from "#/models/appointment.model.js";
 import CategoriesModel from "#/models/categories.model.js";
 import PortfolioModel from "#/models/portfolio.model.js";
 import ServiceModel from "#/models/services.model.js";
@@ -5,7 +6,7 @@ import TeamsModel from "#/models/teams.model.js";
 
 export const show = async (req, res) => {
     try {
-        const [totalCategories, totalServices, activeServices, inactiveServices, totalPortfolio, activePortfolio, inactivePortfolio, totalTeamMembers, activeTeamMembers, inactiveTeamMembers] = await Promise.all([
+        const [totalCategories, totalServices, activeServices, inactiveServices, totalPortfolio, activePortfolio, inactivePortfolio, totalTeamMembers, activeTeamMembers, inactiveTeamMembers, totalAppointments, pendingAppointments] = await Promise.all([
             CategoriesModel.countDocuments(),
             ServiceModel.countDocuments(),
             ServiceModel.countDocuments({ status: "active" }),
@@ -16,6 +17,8 @@ export const show = async (req, res) => {
             TeamsModel.countDocuments(),
             TeamsModel.countDocuments({ status: "active" }),
             TeamsModel.countDocuments({ status: "inactive" }),
+            AppointmentModel.countDocuments(),
+            AppointmentModel.countDocuments({ status: "pending" })
         ]);
 
         return res.status(200).json({
@@ -31,7 +34,9 @@ export const show = async (req, res) => {
                 inactive_portfolio: inactivePortfolio,
                 total_team_members: totalTeamMembers,
                 active_team_members: activeTeamMembers,
-                inactive_team_members: inactiveTeamMembers
+                inactive_team_members: inactiveTeamMembers,
+                total_appointments: totalAppointments,
+                pending_appointments: pendingAppointments
             }
         });
 
