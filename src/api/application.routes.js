@@ -80,6 +80,8 @@ routes.get("/appointments/show", isSignin, authorizeRoles("superadmin"), appoint
 routes.get("/appointments/indv/:id", isSignin, authorizeRoles("superadmin"), appointments.indvidual)
 routes.put("/appointments/update/:id", isSignin, authorizeRoles("superadmin"), appointments.update)
 routes.delete("/appointments/delete/:id", isSignin, authorizeRoles("superadmin"), appointments.destroy)
+
+// Private routes || http://localhost:8000/api/v1/dashboard/show
 routes.get("/dashboard/show", isSignin, authorizeRoles("superadmin"), dashboard.show)
 
 
