@@ -20,7 +20,7 @@ export const createJSONWebToken = (payload, secretKey, expiresIn) => {
 
 export const corsConfiguration = {
     origin: (origin, callback) => {
-        const allowedOrigins = ['http://localhost:5173', 'https://verifiedb2blead.com', 'https://digitaltechplus.vercel.app', 'https://digital-tech-plus-dashboard.vercel.app'];
+        const allowedOrigins = ['http://localhost:5173', 'https://www.verifiedb2blead.com', 'https://digitaltechplus.vercel.app', 'https://digital-tech-plus-dashboard.vercel.app'];
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
